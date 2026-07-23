@@ -6,6 +6,7 @@ TCMB EVDS API'sinden çekilen güncel kur verileriyle, aktif olarak yayınlanan 
 
 - **20 döviz, otomatik model seçimi:** Her döviz için Prophet (3 farklı `changepoint_range`) ve ARIMA ayrı ayrı backtest edilir, en düşük hata payına sahip olan üretimde kullanılır.
 - **Fiyatlandırma arayüzü (`app.py`):** Miktar, birim fiyat ve ödeme/teslim tarihi girilir; güncel kura göre fiyat, tahmini fiyat aralığı ve önerilen "kur riski payı" gösterilir.
+- **Döviz karşılaştırma:** Aynı (veya farklı) miktar/birim fiyatla 2-4 dövizi ortak bir tarihte yan yana karşılaştırıp hangisinin daha avantajlı olduğunu gösterir (ör. "3 ay sonra USD ile mi EUR ile mi ödeme almak daha avantajlı").
 - **Doğruluk geçmişi:** Geçmişte üretilen tahminler, hedefledikleri tarih gerçekleştikçe gerçek kurla otomatik karşılaştırılır; model gerçekten ne kadar isabetli çıkmış, ufka göre (1-7 / 8-30 / 31-90 gün) arayüzde görülebilir.
 - **Günlük otomatik yenileme:** GitHub Actions, her gün veri çekme → model eğitimi → doğruluk hesaplamasını kendi kendine çalıştırıp sonucu repoya commit'ler (bkz. [Otomatik yenileme](#otomatik-yenileme-github-actions)).
 
@@ -84,7 +85,8 @@ forecasting.py       ortak model eğitim/tahmin fonksiyonları, döviz listesi
 forecast.py          model seçimi + tahmin üretimi + geçmiş biriktirme
 accuracy.py           geçmiş tahminlerin gerçekleşen doğruluğunu ölçer
 compare_models.py     Prophet vs ARIMA derin karşılaştırma (analiz amaçlı)
-app.py                Streamlit fiyatlandırma arayüzü
+pricing.py            teklif fiyatı hesabı (Streamlit'ten bağımsız, test edilebilir)
+app.py                Streamlit fiyatlandırma arayüzü (Teklif / Karşılaştır / Grafik / Model Detayları)
 data/                üretilen veri/tahmin/metrik/doğruluk dosyaları
 tests/                pytest test paketi (bkz. "Testler")
 ONERI_DOKUMANI.md     şirket sürecine entegrasyon için öneri dokümanı

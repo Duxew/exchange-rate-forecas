@@ -33,6 +33,7 @@ from forecasting import (
     forecast_path,
     metrics_path,
 )
+from pricing import compute_quote
 
 HISTORY_RANGE_OPTIONS = {
     "Son 180 gün": 180,
@@ -41,8 +42,7 @@ HISTORY_RANGE_OPTIONS = {
 }
 DEFAULT_HISTORY_RANGE = "Tüm geçmiş"
 
-# ONERI_DOKUMANI.md'deki guven tablosuyla birebir ayni esik (%1 alti = yuksek guven).
-HIGH_CONFIDENCE_MAPE_THRESHOLD = 1.0
+MAX_COMPARE_CURRENCIES = 4
 
 st.set_page_config(
     page_title="Döviz Bazlı Fiyatlandırma",
@@ -145,47 +145,31 @@ target_date = st.date_input(
     max_value=max_date,
 )
 
-# Secilen tarih hafta sonuna denk gelebilir; en yakin tahmini bul.
-forecast_df["day_diff"] = (forecast_df["ds"].dt.date - target_date).abs()
-closest = forecast_df.loc[forecast_df["day_diff"].idxmin()]
+quote = compute_quote(
+    current_rate, current_rate_date, forecast_df, metrics["mape"], quantity, unit_price, target_date
+)
 
-foreign_amount = quantity * unit_price
-current_price_try = foreign_amount * current_rate
-expected_price_try = foreign_amount * closest["yhat"]
-low_price_try = foreign_amount * closest["yhat_lower"]
-high_price_try = foreign_amount * closest["yhat_upper"]
-
-# Model ust sinirin altinda bir kur da ongorebilir (kur dususu bekleniyor demektir).
-# Ham payi (negatif olabilir) hala hesaplayip gosteriyoruz, ama onerilen teklif
-# fiyatina sadece pozitifse ekliyoruz - bkz. asagidaki recommended_price_try.
-risk_try = high_price_try - current_price_try
-risk_pct = (closest["yhat_upper"] - current_rate) / current_rate * 100
-
-# ONERI_DOKUMANI.md'nin onerdigi fiyatlandirma kurali: "guncel kura gore fiyat +
-# kur riski payi". Model dusus ongoruyorsa (risk_try negatif) fiyati asagi
-# cekmek yerine guncel fiyatta birakiyoruz - dokumanin "teklif yine de temkinli
-# verilmeli" notuyla tutarli.
-recommended_price_try = current_price_try + max(risk_try, 0)
-
-tab_teklif, tab_grafik, tab_detay = st.tabs(["Teklif", "Grafik", "Model Detayları"])
+tab_teklif, tab_karsilastir, tab_grafik, tab_detay = st.tabs(
+    ["Teklif", "Karşılaştır", "Grafik", "Model Detayları"]
+)
 
 with tab_teklif:
     with st.container(border=True):
         st.caption("Önerilen teklif fiyatı")
         st.markdown(
             f"<div style='font-size:3rem;font-weight:700;line-height:1.15'>"
-            f"{recommended_price_try:,.2f} TRY</div>",
+            f"{quote['recommended_price_try']:,.2f} TRY</div>",
             unsafe_allow_html=True,
         )
-        if risk_try > 0:
+        if quote["risk_try"] > 0:
             st.write(
-                f"Güncel fiyatın üzerine %{risk_pct:.2f} kur riski payı eklendi "
-                f"(+{risk_try:,.2f} TRY)."
+                f"Güncel fiyatın üzerine %{quote['risk_pct']:.2f} kur riski payı eklendi "
+                f"(+{quote['risk_try']:,.2f} TRY)."
             )
         else:
             st.write("Model bir düşüş öngörüyor, ek bir güvenlik payına gerek görülmedi.")
 
-        if metrics["mape"] < HIGH_CONFIDENCE_MAPE_THRESHOLD:
+        if quote["confidence_high"]:
             st.badge("Güven: Yüksek", icon=":material/check_circle:", color="green")
         else:
             st.badge("Güven: Orta", icon=":material/error:", color="orange")
@@ -197,10 +181,115 @@ with tab_teklif:
         st.write(f"{current_rate:.4f} TRY")
     with c2:
         st.caption("Güncel fiyat")
-        st.write(f"{current_price_try:,.2f} TRY")
+        st.write(f"{quote['current_price_try']:,.2f} TRY")
     with c3:
-        st.caption(f"Tahmini aralık ({closest['ds'].date()})")
-        st.write(f"{low_price_try:,.2f} – {high_price_try:,.2f} TRY")
+        st.caption(f"Tahmini aralık ({quote['target_ds'].date()})")
+        st.write(f"{quote['low_price_try']:,.2f} – {quote['high_price_try']:,.2f} TRY")
+
+with tab_karsilastir:
+    selected_currencies = st.multiselect(
+        f"Karşılaştırılacak dövizler (2-{MAX_COMPARE_CURRENCIES})",
+        list(CURRENCIES.keys()),
+        default=list(CURRENCIES.keys())[:2],
+        max_selections=MAX_COMPARE_CURRENCIES,
+        format_func=lambda code: f"{code} - {CURRENCY_NAMES.get(code, code)}",
+    )
+
+    if len(selected_currencies) < 2:
+        st.info("Karşılaştırmak için en az 2 döviz seçin.")
+    else:
+        compare_data = {}
+        missing = None
+        for code in selected_currencies:
+            cpaths = CURRENCIES[code]
+            try:
+                c_rate, c_rate_date = load_current_rate(cpaths["data"])
+                c_forecast = load_forecast(cpaths["forecast"])
+                c_metrics = load_metrics(cpaths["metrics"])
+            except FileNotFoundError as e:
+                missing = (code, e.filename)
+                break
+            compare_data[code] = (c_rate, c_rate_date, c_forecast, c_metrics)
+
+        if missing:
+            code, filename = missing
+            st.error(f"{code} için gerekli veri dosyası bulunamadı: {filename}")
+        else:
+            # Secilen dovizlerin tahmin ufuklari farkli olabilir (ARIMA ~64 is
+            # gunu, Prophet 90 takvim gunu) - ortak tarih secicinin sinirlari
+            # bu ufuklarin KESISIMI olmali, aksi halde bir doviz icin gecersiz
+            # bir tarih secilebilir.
+            shared_min = max(cf.min()["ds"].date() for _, _, cf, _ in compare_data.values())
+            shared_max = min(cf.max()["ds"].date() for _, _, cf, _ in compare_data.values())
+            shared_default = min(date.today() + timedelta(days=30), shared_max)
+
+            compare_date = st.date_input(
+                "Ödeme / teslim tarihi (tüm dövizler için ortak)",
+                value=shared_default,
+                min_value=shared_min,
+                max_value=shared_max,
+                key="compare_date",
+            )
+
+            st.write("")
+            cols = st.columns(len(selected_currencies))
+            row_inputs = {}
+            for col, code in zip(cols, selected_currencies):
+                with col:
+                    st.caption(f"**{code}**")
+                    row_inputs[code] = (
+                        st.number_input("Miktar", min_value=1, value=100, step=1, key=f"cmp_qty_{code}"),
+                        st.number_input(
+                            f"Birim fiyat ({code})", min_value=0.0, value=10.0, step=0.5, key=f"cmp_price_{code}"
+                        ),
+                    )
+
+            rows = []
+            for code in selected_currencies:
+                c_rate, c_rate_date, c_forecast, c_metrics = compare_data[code]
+                c_quantity, c_unit_price = row_inputs[code]
+                c_quote = compute_quote(
+                    c_rate, c_rate_date, c_forecast, c_metrics["mape"], c_quantity, c_unit_price, compare_date
+                )
+                rows.append(
+                    {
+                        "Döviz": code,
+                        "Güncel fiyat (TRY)": c_quote["current_price_try"],
+                        "Önerilen teklif (TRY)": c_quote["recommended_price_try"],
+                        "Kur riski payı (TRY)": c_quote["risk_try"],
+                        "Güven": "Yüksek" if c_quote["confidence_high"] else "Orta",
+                    }
+                )
+
+            comparison_df = pd.DataFrame(rows).sort_values("Önerilen teklif (TRY)").reset_index(drop=True)
+            cheapest = comparison_df.iloc[0]
+            st.success(
+                f"En avantajlı: **{cheapest['Döviz']}** — {cheapest['Önerilen teklif (TRY)']:,.2f} TRY "
+                f"({compare_date} için)"
+            )
+            st.dataframe(
+                comparison_df.style.format(
+                    {
+                        "Güncel fiyat (TRY)": "{:,.2f}",
+                        "Önerilen teklif (TRY)": "{:,.2f}",
+                        "Kur riski payı (TRY)": "{:,.2f}",
+                    }
+                ),
+                hide_index=True,
+                use_container_width=True,
+            )
+
+            compare_bar = (
+                alt.Chart(comparison_df)
+                .mark_bar(color=COLOR_HISTORY)
+                .encode(
+                    x=alt.X("Döviz:N", sort="-y"),
+                    y=alt.Y("Önerilen teklif (TRY):Q"),
+                    tooltip=["Döviz", alt.Tooltip("Önerilen teklif (TRY):Q", format=",.2f")],
+                )
+                .properties(height=250)
+            )
+            st.altair_chart(compare_bar, use_container_width=True)
 
 with tab_grafik:
     with st.container(border=True):

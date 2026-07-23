@@ -34,7 +34,12 @@ from forecasting import (
     metrics_path,
 )
 
-HISTORY_DISPLAY_DAYS = 180  # grafikte gosterilecek gecmis veri uzunlugu
+HISTORY_RANGE_OPTIONS = {
+    "Son 180 gün": 180,
+    "Son 1 yıl": 365,
+    "Tüm geçmiş": None,
+}
+DEFAULT_HISTORY_RANGE = "Tüm geçmiş"
 
 # ONERI_DOKUMANI.md'deki guven tablosuyla birebir ayni esik (%1 alti = yuksek guven).
 HIGH_CONFIDENCE_MAPE_THRESHOLD = 1.0
@@ -199,10 +204,23 @@ with tab_teklif:
 
 with tab_grafik:
     with st.container(border=True):
+        history_range = st.segmented_control(
+            "Geçmiş aralığı",
+            list(HISTORY_RANGE_OPTIONS.keys()),
+            default=DEFAULT_HISTORY_RANGE,
+            label_visibility="collapsed",
+        )
+        if history_range is None:
+            history_range = DEFAULT_HISTORY_RANGE
+        history_days = HISTORY_RANGE_OPTIONS[history_range]
+
         history_df = load_history(paths["data"])
-        recent_history = history_df[
-            history_df["date"] >= history_df["date"].max() - pd.Timedelta(days=HISTORY_DISPLAY_DAYS)
-        ]
+        if history_days is None:
+            recent_history = history_df
+        else:
+            recent_history = history_df[
+                history_df["date"] >= history_df["date"].max() - pd.Timedelta(days=history_days)
+            ]
 
         # Eksen olceklendirmesi gercekleşen kur + nokta tahmine (yhat) gore
         # yapilir, yhat_lower/yhat_upper'in en uc degerlerine gore DEGIL. ARIMA
@@ -278,12 +296,14 @@ with tab_grafik:
         chart = (band + history_line + forecast_line + target_rule).properties(height=380).interactive()
         st.altair_chart(chart, use_container_width=True)
         st.caption(
-            "Mavi çizgi: gerçekleşen kur (son "
-            f"{HISTORY_DISPLAY_DAYS} gün). Turuncu kesikli çizgi: tahmin (yhat), turuncu "
-            "bant: belirsizlik aralığı (yhat_lower–yhat_upper) — okunabilirlik için "
-            "eksen aralığı gerçekleşen kur ve tahmine göre ayarlanır, bant görünür "
-            "alanın dışına taşabilir (belirsizlik ufka doğru arttıkça normaldir). "
-            "Dikey kesikli çizgi: seçilen ödeme/teslim tarihi."
+            f"Mavi çizgi: gerçekleşen kur ({history_range.lower()}). Turuncu kesikli "
+            "çizgi: tahmin (yhat), turuncu bant: belirsizlik aralığı (yhat_lower–"
+            "yhat_upper) — okunabilirlik için eksen aralığı gerçekleşen kur ve "
+            "tahmine göre ayarlanır, bant görünür alanın dışına taşabilir (belirsizlik "
+            "ufka doğru arttıkça normaldir). \"Tüm geçmiş\" seçiliyken uzun vadeli "
+            "yükseliş, yakın dönem/tahmin detayını sıkıştırabilir — grafik "
+            "yakınlaştırılıp kaydırılabilir (interaktif). Dikey kesikli çizgi: seçilen "
+            "ödeme/teslim tarihi."
         )
 
 with tab_detay:

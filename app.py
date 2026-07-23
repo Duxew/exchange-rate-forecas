@@ -42,8 +42,6 @@ HISTORY_RANGE_OPTIONS = {
 }
 DEFAULT_HISTORY_RANGE = "Tüm geçmiş"
 
-MAX_COMPARE_CURRENCIES = 4
-
 st.set_page_config(
     page_title="Döviz Bazlı Fiyatlandırma",
     page_icon=":material/currency_exchange:",
@@ -187,140 +185,139 @@ with tab_teklif:
         st.write(f"{quote['low_price_try']:,.2f} – {quote['high_price_try']:,.2f} TRY")
 
 with tab_karsilastir:
-    selected_currencies = st.multiselect(
-        f"Karşılaştırılacak dövizler (2-{MAX_COMPARE_CURRENCIES})",
-        list(CURRENCIES.keys()),
-        default=list(CURRENCIES.keys())[:2],
-        max_selections=MAX_COMPARE_CURRENCIES,
-        format_func=lambda code: f"{code} - {CURRENCY_NAMES.get(code, code)}",
-    )
+    all_currencies = list(CURRENCIES.keys())
 
-    if len(selected_currencies) < 2:
-        st.info("Karşılaştırmak için en az 2 döviz seçin.")
+    compare_data = {}
+    missing = None
+    for code in all_currencies:
+        cpaths = CURRENCIES[code]
+        try:
+            c_rate, c_rate_date = load_current_rate(cpaths["data"])
+            c_forecast = load_forecast(cpaths["forecast"])
+            c_metrics = load_metrics(cpaths["metrics"])
+        except FileNotFoundError as e:
+            missing = (code, e.filename)
+            break
+        compare_data[code] = (c_rate, c_rate_date, c_forecast, c_metrics)
+
+    if missing:
+        code, filename = missing
+        st.error(f"{code} için gerekli veri dosyası bulunamadı: {filename}")
     else:
-        compare_data = {}
-        missing = None
-        for code in selected_currencies:
-            cpaths = CURRENCIES[code]
-            try:
-                c_rate, c_rate_date = load_current_rate(cpaths["data"])
-                c_forecast = load_forecast(cpaths["forecast"])
-                c_metrics = load_metrics(cpaths["metrics"])
-            except FileNotFoundError as e:
-                missing = (code, e.filename)
-                break
-            compare_data[code] = (c_rate, c_rate_date, c_forecast, c_metrics)
+        # Dovizlerin tahmin ufuklari farkli olabilir (ARIMA ~64 is gunu,
+        # Prophet 90 takvim gunu) - ortak tarih secicinin sinirlari TUM 20
+        # dovizin ufkunun KESISIMI olmali, aksi halde biri icin gecersiz bir
+        # tarih secilebilir.
+        shared_min = max(cf.min()["ds"].date() for _, _, cf, _ in compare_data.values())
+        shared_max = min(cf.max()["ds"].date() for _, _, cf, _ in compare_data.values())
+        shared_default = min(date.today() + timedelta(days=30), shared_max)
 
-        if missing:
-            code, filename = missing
-            st.error(f"{code} için gerekli veri dosyası bulunamadı: {filename}")
-        else:
-            # Secilen dovizlerin tahmin ufuklari farkli olabilir (ARIMA ~64 is
-            # gunu, Prophet 90 takvim gunu) - ortak tarih secicinin sinirlari
-            # bu ufuklarin KESISIMI olmali, aksi halde bir doviz icin gecersiz
-            # bir tarih secilebilir.
-            shared_min = max(cf.min()["ds"].date() for _, _, cf, _ in compare_data.values())
-            shared_max = min(cf.max()["ds"].date() for _, _, cf, _ in compare_data.values())
-            shared_default = min(date.today() + timedelta(days=30), shared_max)
-
-            b1, b2, b3 = st.columns(3)
-            with b1:
-                base_currency = st.selectbox(
-                    "Baz döviz",
-                    selected_currencies,
-                    format_func=lambda code: f"{code} - {CURRENCY_NAMES.get(code, code)}",
-                    help="Diğer dövizlerin birim fiyatı, bugünün kuruyla bu dövizdeki "
-                    "tutara eşdeğer olacak şekilde otomatik hesaplanır.",
-                    key="compare_base_currency",
-                )
-            with b2:
-                compare_quantity = st.number_input(
-                    "Miktar (adet, tüm dövizler için ortak)",
-                    min_value=1,
-                    value=100,
-                    step=1,
-                    key="compare_quantity",
-                )
-            with b3:
-                base_unit_price = st.number_input(
-                    f"Birim fiyat ({base_currency})",
-                    min_value=0.0,
-                    value=10.0,
-                    step=0.5,
-                    key="compare_base_unit_price",
-                )
-
-            compare_date = st.date_input(
-                "Ödeme / teslim tarihi (tüm dövizler için ortak)",
-                value=shared_default,
-                min_value=shared_min,
-                max_value=shared_max,
-                key="compare_date",
+        b1, b2, b3 = st.columns(3)
+        with b1:
+            base_currency = st.selectbox(
+                "Baz döviz",
+                all_currencies,
+                format_func=lambda code: f"{code} - {CURRENCY_NAMES.get(code, code)}",
+                help="Diğer dövizlerin birim fiyatı, bugünün kuruyla bu dövizdeki "
+                "tutara eşdeğer olacak şekilde otomatik hesaplanır.",
+                key="compare_base_currency",
+            )
+        with b2:
+            compare_quantity = st.number_input(
+                "Miktar (adet, tüm dövizler için ortak)",
+                min_value=1,
+                value=100,
+                step=1,
+                key="compare_quantity",
+            )
+        with b3:
+            base_unit_price = st.number_input(
+                f"Birim fiyat ({base_currency})",
+                min_value=0.0,
+                value=10.0,
+                step=0.5,
+                key="compare_base_unit_price",
             )
 
-            # Baz dovizin BUGUNKU TRY karsiligi sabit tutulup, diger her doviz
-            # icin ayni TRY tutarina bugun esdeger olan birim fiyat geriye dogru
-            # hesaplanir - boylece karsilastirma "ayni degerde iki teklif, farkli
-            # para biriminde verilse ileride ne fark eder" sorusuna cevap verir.
-            # Miktar/birim fiyati her doviz icin ayri ayri elle girmek (onceki
-            # tasarim) esdeger olmayan, keyfi tutarlari kiyasliyordu.
-            base_rate = compare_data[base_currency][0]
-            base_try_value = compare_quantity * base_unit_price * base_rate
+        compare_date = st.date_input(
+            "Ödeme / teslim tarihi (tüm dövizler için ortak)",
+            value=shared_default,
+            min_value=shared_min,
+            max_value=shared_max,
+            key="compare_date",
+        )
 
-            rows = []
-            for code in selected_currencies:
-                c_rate, c_rate_date, c_forecast, c_metrics = compare_data[code]
-                c_unit_price = (
-                    base_unit_price if code == base_currency else base_try_value / (compare_quantity * c_rate)
-                )
-                c_quote = compute_quote(
-                    c_rate, c_rate_date, c_forecast, c_metrics["mape"], compare_quantity, c_unit_price, compare_date
-                )
-                rows.append(
-                    {
-                        "Döviz": code,
-                        "Birim fiyat": c_unit_price,
-                        "Güncel fiyat (TRY)": c_quote["current_price_try"],
-                        "Önerilen teklif (TRY)": c_quote["recommended_price_try"],
-                        "Kur riski payı (TRY)": c_quote["risk_try"],
-                        "Güven": "Yüksek" if c_quote["confidence_high"] else "Orta",
-                    }
-                )
+        # Baz dovizin BUGUNKU TRY karsiligi sabit tutulup, diger her doviz
+        # icin ayni TRY tutarina bugun esdeger olan birim fiyat geriye dogru
+        # hesaplanir - boylece karsilastirma "ayni degerde bir teklif, farkli
+        # para biriminde verilse ileride ne fark eder" sorusuna cevap verir.
+        base_rate = compare_data[base_currency][0]
+        base_try_value = compare_quantity * base_unit_price * base_rate
 
-            comparison_df = pd.DataFrame(rows).sort_values("Önerilen teklif (TRY)").reset_index(drop=True)
-            cheapest = comparison_df.iloc[0]
-            st.caption(
-                f"{compare_quantity} adet × {base_currency} {base_unit_price:,.2f} bugünün kuruyla diğer "
-                "dövizlere eşdeğer birim fiyata çevrilip karşılaştırılıyor."
+        rows = []
+        for code in all_currencies:
+            c_rate, c_rate_date, c_forecast, c_metrics = compare_data[code]
+            c_unit_price = (
+                base_unit_price if code == base_currency else base_try_value / (compare_quantity * c_rate)
             )
-            st.success(
-                f"En avantajlı: **{cheapest['Döviz']}** — {cheapest['Önerilen teklif (TRY)']:,.2f} TRY "
-                f"({compare_date} için)"
+            c_quote = compute_quote(
+                c_rate, c_rate_date, c_forecast, c_metrics["mape"], compare_quantity, c_unit_price, compare_date
             )
-            st.dataframe(
-                comparison_df.style.format(
-                    {
-                        "Birim fiyat": "{:,.4f}",
-                        "Güncel fiyat (TRY)": "{:,.2f}",
-                        "Önerilen teklif (TRY)": "{:,.2f}",
-                        "Kur riski payı (TRY)": "{:,.2f}",
-                    }
-                ),
-                hide_index=True,
-                use_container_width=True,
+            rows.append(
+                {
+                    "Döviz": code,
+                    "Birim fiyat": c_unit_price,
+                    "Güncel fiyat (TRY)": c_quote["current_price_try"],
+                    "Önerilen teklif (TRY)": c_quote["recommended_price_try"],
+                    "Kur riski payı (TRY)": c_quote["risk_try"],
+                    "Kur riski payı (%)": c_quote["risk_pct"],
+                    "Güven": "Yüksek" if c_quote["confidence_high"] else "Orta",
+                }
             )
 
-            compare_bar = (
-                alt.Chart(comparison_df)
-                .mark_bar(color=COLOR_HISTORY)
-                .encode(
-                    x=alt.X("Döviz:N", sort="-y"),
-                    y=alt.Y("Önerilen teklif (TRY):Q"),
-                    tooltip=["Döviz", alt.Tooltip("Önerilen teklif (TRY):Q", format=",.2f")],
-                )
-                .properties(height=250)
+        # En avantajlidan (dusuk onerilen teklif) en avantajsiza (yuksek) sirali -
+        # kullanicinin istedigi "en mantiklisi ustte, en mantiksizi altta" siralama.
+        comparison_df = pd.DataFrame(rows).sort_values("Önerilen teklif (TRY)").reset_index(drop=True)
+        comparison_df.insert(0, "Sıra", range(1, len(comparison_df) + 1))
+        cheapest = comparison_df.iloc[0]
+
+        st.caption(
+            f"{compare_quantity} adet × {base_currency} {base_unit_price:,.2f} bugünün kuruyla tüm dövizlere "
+            "eşdeğer birim fiyata çevrilip, önerilen teklife göre en avantajlıdan en avantajsıza sıralanıyor."
+        )
+        st.success(
+            f"En avantajlı: **{cheapest['Döviz']}** — {cheapest['Önerilen teklif (TRY)']:,.2f} TRY "
+            f"({compare_date} için)"
+        )
+        st.dataframe(
+            comparison_df.style.format(
+                {
+                    "Birim fiyat": "{:,.4f}",
+                    "Güncel fiyat (TRY)": "{:,.2f}",
+                    "Önerilen teklif (TRY)": "{:,.2f}",
+                    "Kur riski payı (TRY)": "{:,.2f}",
+                    "Kur riski payı (%)": "{:+,.2f}",
+                }
+            ),
+            hide_index=True,
+            use_container_width=True,
+        )
+
+        compare_bar = (
+            alt.Chart(comparison_df)
+            .mark_bar(color=COLOR_HISTORY)
+            .encode(
+                x=alt.X("Döviz:N", sort="y"),
+                y=alt.Y("Kur riski payı (%):Q"),
+                tooltip=["Döviz", alt.Tooltip("Kur riski payı (%):Q", format="+,.2f")],
             )
-            st.altair_chart(compare_bar, use_container_width=True)
+            .properties(height=280)
+        )
+        st.altair_chart(compare_bar, use_container_width=True)
+        st.caption(
+            "Kur riski payı yüzdesi, en avantajlıdan (solda, düşük/negatif) en avantajsıza (sağda, "
+            "yüksek) sıralı — tablo ile aynı sıra."
+        )
 
 with tab_grafik:
     with st.container(border=True):

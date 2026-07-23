@@ -80,6 +80,8 @@ DATA_DIR = "data"
 os.makedirs(f"{DATA_DIR}/raw", exist_ok=True)
 os.makedirs(f"{DATA_DIR}/forecasts", exist_ok=True)
 os.makedirs(f"{DATA_DIR}/metrics", exist_ok=True)
+os.makedirs(f"{DATA_DIR}/forecast_history", exist_ok=True)
+os.makedirs(f"{DATA_DIR}/accuracy", exist_ok=True)
 
 
 def data_path(code):
@@ -96,6 +98,17 @@ def metrics_path(code):
 
 def model_comparison_path():
     return f"{DATA_DIR}/model_comparison.json"
+
+
+def forecast_history_path(code):
+    """forecast.py'nin her calistirmada biriktirdigi gecmis tahmin
+    anlik goruntulerinin (generated_on/ds/yhat/...) tutuldugu dosya.
+    accuracy.py bunu gercek kurla karsilastirip gecmis isabet oranini hesaplar."""
+    return f"{DATA_DIR}/forecast_history/history_{code.lower()}.csv"
+
+
+def accuracy_path(code):
+    return f"{DATA_DIR}/accuracy/accuracy_{code.lower()}.json"
 
 # Modeller sadece son N gunluk veriyle egitilir. Cok daha eski, artik
 # gecerli olmayan trendlerin (ornegin gecmis kriz donemlerindeki sert

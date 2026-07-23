@@ -20,7 +20,7 @@ python -m venv .venv
 # source .venv/bin/activate && pip install -r requirements.txt   # Linux/Mac
 ```
 
-TCMB EVDS'ten ücretsiz bir API anahtarı alın ([evds2.tcmb.gov.tr](https://evds2.tcmb.gov.tr)) ve repo kökünde bir `.env` dosyası oluşturun:
+TCMB EVDS'ten ücretsiz bir API anahtarı alın ([evds2.tcmb.gov.tr](https://evds3.tcmb.gov.tr)) ve repo kökünde bir `.env` dosyası oluşturun:
 
 ```
 TCMB_API_KEY=your_key_here

@@ -219,6 +219,12 @@ with tab_grafik:
         padding = max((narrow_max - narrow_min) * 0.15, narrow_max * 0.01)
         y_scale = alt.Scale(domain=[narrow_min - padding, narrow_max + padding], zero=False)
 
+        # Her katmana ACIK tooltip tanimlanir. Tanimlanmazsa Vega-Lite otomatik
+        # bir tooltip uretiyor ve y ekseninin baslidgini (f"{currency}/TRY")
+        # yhat_lower alaninin etiketi sanip oyle gosteriyor - imlec dashed
+        # cizgiye (yhat) degil altindaki genis banda denk geldiginde kafa
+        # karistirici/yanlis gorunumlu degerler (ornegin "EUR/TRY: 51.99"
+        # ama gorsel olarak cizgi 54.1'de) cikmasina yol aciyordu.
         band = (
             alt.Chart(forecast_df)
             .mark_area(opacity=0.15, color=COLOR_FORECAST, clip=True)
@@ -226,17 +232,36 @@ with tab_grafik:
                 x=alt.X("ds:T", title="Tarih"),
                 y=alt.Y("yhat_lower:Q", title=f"{currency}/TRY", scale=y_scale),
                 y2="yhat_upper:Q",
+                tooltip=[
+                    alt.Tooltip("ds:T", title="Tarih"),
+                    alt.Tooltip("yhat_lower:Q", title="Belirsizlik alt sınırı", format=",.4f"),
+                    alt.Tooltip("yhat_upper:Q", title="Belirsizlik üst sınırı", format=",.4f"),
+                ],
             )
         )
         forecast_line = (
             alt.Chart(forecast_df)
             .mark_line(color=COLOR_FORECAST, strokeWidth=2, strokeDash=[5, 3], clip=True)
-            .encode(x="ds:T", y=alt.Y("yhat:Q", scale=y_scale), tooltip=["ds:T", "yhat:Q"])
+            .encode(
+                x="ds:T",
+                y=alt.Y("yhat:Q", scale=y_scale),
+                tooltip=[
+                    alt.Tooltip("ds:T", title="Tarih"),
+                    alt.Tooltip("yhat:Q", title="Tahmin (yhat)", format=",.4f"),
+                ],
+            )
         )
         history_line = (
             alt.Chart(recent_history)
             .mark_line(color=COLOR_HISTORY, strokeWidth=2)
-            .encode(x="date:T", y=alt.Y("rate:Q", scale=y_scale), tooltip=["date:T", "rate:Q"])
+            .encode(
+                x="date:T",
+                y=alt.Y("rate:Q", scale=y_scale),
+                tooltip=[
+                    alt.Tooltip("date:T", title="Tarih"),
+                    alt.Tooltip("rate:Q", title="Gerçekleşen kur", format=",.4f"),
+                ],
+            )
         )
         target_rule = (
             alt.Chart(pd.DataFrame({"d": [pd.Timestamp(target_date)]}))

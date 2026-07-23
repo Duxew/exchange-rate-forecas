@@ -4,10 +4,11 @@ __pycache__/
 *.pyc
 .idea/
 .mcp.json
+CLAUDE.md
 
 # Ham veri API'den her an yeniden cekilebilir, repoda tutulmuyor. Uretilen
 # tahmin/metrik/dogruluk dosyalari ise kucuk ve GitHub Actions'in gunluk
 # otomatik yenilemesinin sonucunu gorunur kilmak icin track ediliyor -
-# bkz. .github/workflows/refresh.yml ve CLAUDE.md.
+# bkz. .github/workflows/refresh.yml.
 data/raw/
 data/model_comparison.json

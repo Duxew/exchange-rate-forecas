@@ -23,7 +23,15 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
-from forecasting import CURRENCY_NAMES, CURRENCY_SERIES, data_path, forecast_path, metrics_path
+from forecasting import (
+    CURRENCY_NAMES,
+    CURRENCY_SERIES,
+    accuracy_path,
+    data_path,
+    forecast_history_path,
+    forecast_path,
+    metrics_path,
+)
 
 HISTORY_DISPLAY_DAYS = 180  # grafikte gosterilecek gecmis veri uzunlugu
 
@@ -34,6 +42,8 @@ CURRENCIES = {
         "data": data_path(code),
         "forecast": forecast_path(code),
         "metrics": metrics_path(code),
+        "accuracy": accuracy_path(code),
+        "forecast_history": forecast_history_path(code),
     }
     for code in CURRENCY_SERIES
 }
@@ -59,6 +69,12 @@ def load_forecast(forecast_path):
 @st.cache_data
 def load_metrics(metrics_path):
     with open(metrics_path) as f:
+        return json.load(f)
+
+
+@st.cache_data
+def load_accuracy(accuracy_path):
+    with open(accuracy_path) as f:
         return json.load(f)
 
 
@@ -199,3 +215,50 @@ st.caption(
     "bant: belirsizlik aralığı (yhat_lower–yhat_upper). Kırmızı kesikli çizgi: "
     "seçilen ödeme/teslim tarihi."
 )
+
+st.divider()
+st.subheader("Model doğruluk geçmişi")
+
+try:
+    accuracy = load_accuracy(paths["accuracy"])
+except FileNotFoundError:
+    st.info(
+        "Bu döviz için henüz yeterli geçmiş tahmin verisi birikmedi. "
+        "Otomatik günlük yenileme başladıktan bir süre sonra (tahminlerin "
+        "hedeflediği tarihler gerçekleştikçe) burada gerçekleşen isabet oranı "
+        "görünecek."
+    )
+else:
+    st.caption(
+        f"Geçmişte üretilen tahminlerin, hedefledikleri tarih gerçekleştikten sonra "
+        f"gerçek kurla karşılaştırılmasına dayanır ({accuracy['n_observations']} "
+        f"gözlem, son güncelleme: {accuracy['last_updated']})."
+    )
+    a1, a2, a3 = st.columns(3)
+    a1.metric("Gerçekleşen MAPE (genel)", f"%{accuracy['overall_mape']:.2f}")
+    a2.metric("Gerçekleşen MAE", f"{accuracy['overall_mae']:.4f} TRY")
+    a3.metric("Gerçekleşen RMSE", f"{accuracy['overall_rmse']:.4f} TRY")
+
+    by_horizon = accuracy["by_horizon"]
+    if by_horizon:
+        horizon_df = pd.DataFrame(
+            [
+                {"Ufuk (gün)": label, "MAPE (%)": vals["mape"], "Gözlem": vals["n_observations"]}
+                for label, vals in by_horizon.items()
+            ]
+        )
+        horizon_chart = (
+            alt.Chart(horizon_df)
+            .mark_bar(color="#4c78a8")
+            .encode(
+                x=alt.X("Ufuk (gün):N", sort=None),
+                y=alt.Y("MAPE (%):Q"),
+                tooltip=["Ufuk (gün)", "MAPE (%)", "Gözlem"],
+            )
+            .properties(height=220)
+        )
+        st.altair_chart(horizon_chart, use_container_width=True)
+        st.caption(
+            "Tahmin üretildikten kaç gün sonrasını hedeflediğine göre gruplanmış "
+            "gerçekleşen MAPE (kısa ufuk genelde daha isabetlidir)."
+        )

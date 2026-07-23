@@ -39,14 +39,21 @@ HISTORY_DISPLAY_DAYS = 180  # grafikte gosterilecek gecmis veri uzunlugu
 # ONERI_DOKUMANI.md'deki guven tablosuyla birebir ayni esik (%1 alti = yuksek guven).
 HIGH_CONFIDENCE_MAPE_THRESHOLD = 1.0
 
-# dataviz referans paletinin kategorik 1. (mavi) ve 2. (turuncu) slotlari.
-COLOR_HISTORY = "#2a78d6"
-COLOR_FORECAST = "#eb6834"
-
 st.set_page_config(
     page_title="Döviz Bazlı Fiyatlandırma",
     page_icon=":material/currency_exchange:",
 )
+
+# dataviz referans paletinin kategorik 1. (mavi) ve 2. (turuncu) slotlari - acik/
+# koyu tema icin ayri adimlanmis (bkz. .streamlit/config.toml [theme.light/dark]).
+# st.context.theme.type aktif temayi (kullanicinin sistem tercihi veya elle
+# sectigi) yansitir, bu yuzden grafik renkleri de ona gore secilir.
+if st.context.theme.type == "dark":
+    COLOR_HISTORY = "#3987e5"
+    COLOR_FORECAST = "#d95926"
+else:
+    COLOR_HISTORY = "#2a78d6"
+    COLOR_FORECAST = "#eb6834"
 
 CURRENCIES = {
     code: {

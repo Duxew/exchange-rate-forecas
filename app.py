@@ -235,7 +235,10 @@ with tab_grafik:
         narrow_min = min(recent_history["rate"].min(), forecast_df["yhat"].min())
         narrow_max = max(recent_history["rate"].max(), forecast_df["yhat"].max())
         padding = max((narrow_max - narrow_min) * 0.15, narrow_max * 0.01)
-        y_scale = alt.Scale(domain=[narrow_min - padding, narrow_max + padding], zero=False)
+        # Kur asla negatif olamaz - "Tum gecmis" secildiginde (uzun donem araligi
+        # cok genis oldugu icin oransal payin mutlak degeri de buyuyor) alt sinir
+        # 0'in altina dusebiliyordu; burada tabanliyoruz.
+        y_scale = alt.Scale(domain=[max(narrow_min - padding, 0), narrow_max + padding], zero=False)
 
         # Her katmana ACIK tooltip tanimlanir. Tanimlanmazsa Vega-Lite otomatik
         # bir tooltip uretiyor ve y ekseninin baslidgini (f"{currency}/TRY")

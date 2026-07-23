@@ -2,7 +2,6 @@
 
 TCMB EVDS API'sinden çekilen güncel kur verileriyle, aktif olarak yayınlanan 20 döviz cinsi için TRY tahmini üreten ve bunu bir ürün/hizmet fiyatlandırma aracına dönüştüren uçtan uca bir sistem. Prophet ve ARIMA modelleri her döviz için ayrı ayrı yarıştırılır, hangisi daha isabetliyse (30 günlük backtest MAPE'ye göre) o seçilir. Sonuçlar bir Streamlit arayüzünde, güncel kur / tahmini kur / önerilen kur riski payı olarak gösterilir.
 
-CNG400 staj projesi kapsamında geliştirilmiştir.
 
 ## Özellikler
 

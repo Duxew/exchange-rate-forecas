@@ -58,6 +58,11 @@ else:
     COLOR_HISTORY = "#2a78d6"
     COLOR_FORECAST = "#eb6834"
 
+# dataviz paletinin durum renkleri (good/critical) - light/dark icin ayni hex,
+# kategorik slotlarla (mavi/turuncu) karismasin diye kasitli olarak farkli aile.
+COLOR_GOOD = "#0ca30c"
+COLOR_CRITICAL = "#d03b3b"
+
 CURRENCIES = {
     code: {
         "data": data_path(code),
@@ -289,6 +294,10 @@ with tab_karsilastir:
             f"En avantajlı: **{cheapest['Döviz']}** — {cheapest['Önerilen teklif (TRY)']:,.2f} TRY "
             f"({compare_date} için)"
         )
+        # En avantajli satir (Sira == 1) hafif yesil arka planla vurgulanir -
+        # basarili teklifi metin disinda da bir bakista secilebilir kilmak icin.
+        # Renk durum (status) anlaminda kullanildigindan kategorik seri renkleriyle
+        # (mavi/turuncu) kasitli olarak farkli bir aileden secildi (dataviz paleti).
         st.dataframe(
             comparison_df.style.format(
                 {
@@ -298,17 +307,32 @@ with tab_karsilastir:
                     "Kur riski payı (TRY)": "{:,.2f}",
                     "Kur riski payı (%)": "{:+,.2f}",
                 }
+            ).apply(
+                lambda row: ["background-color: rgba(12, 163, 12, 0.15)"] * len(row)
+                if row["Sıra"] == 1
+                else [""] * len(row),
+                axis=1,
             ),
             hide_index=True,
             use_container_width=True,
         )
 
+        # Bar rengi kur riski payinin isaretine gore durum (status) renklerine
+        # ayrilir - <=0 (ek maliyet yok/indirim) yesil (good), >0 (ek maliyet)
+        # kirmizi (critical). Diverging bir buyukluk degil, iki ayrik durum
+        # oldugu icin dataviz paletinin status renkleri kullanildi, categorical
+        # slotlar (COLOR_HISTORY/COLOR_FORECAST) degil.
         compare_bar = (
             alt.Chart(comparison_df)
-            .mark_bar(color=COLOR_HISTORY)
+            .mark_bar()
             .encode(
                 x=alt.X("Döviz:N", sort="y"),
                 y=alt.Y("Kur riski payı (%):Q"),
+                color=alt.condition(
+                    "datum['Kur riski payı (%)'] <= 0",
+                    alt.value(COLOR_GOOD),
+                    alt.value(COLOR_CRITICAL),
+                ),
                 tooltip=["Döviz", alt.Tooltip("Kur riski payı (%):Q", format="+,.2f")],
             )
             .properties(height=280)
@@ -316,7 +340,7 @@ with tab_karsilastir:
         st.altair_chart(compare_bar, use_container_width=True)
         st.caption(
             "Kur riski payı yüzdesi, en avantajlıdan (solda, düşük/negatif) en avantajsıza (sağda, "
-            "yüksek) sıralı — tablo ile aynı sıra."
+            "yüksek) sıralı — tablo ile aynı sıra. Yeşil: ek maliyet yok/indirim, kırmızı: ek maliyet var."
         )
 
 with tab_grafik:

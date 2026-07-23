@@ -2,7 +2,6 @@
 
 TCMB EVDS API'sinden çekilen güncel kur verileriyle, aktif olarak yayınlanan 20 döviz cinsi için TRY tahmini üreten ve bunu bir ürün/hizmet fiyatlandırma aracına dönüştüren uçtan uca bir sistem. Prophet ve ARIMA modelleri her döviz için ayrı ayrı yarıştırılır, hangisi daha isabetliyse (30 günlük backtest MAPE'ye göre) o seçilir. Sonuçlar bir Streamlit arayüzünde, güncel kur / tahmini kur / önerilen kur riski payı olarak gösterilir.
 
-
 ## Özellikler
 
 - **20 döviz, otomatik model seçimi:** Her döviz için Prophet (3 farklı `changepoint_range`) ve ARIMA ayrı ayrı backtest edilir, en düşük hata payına sahip olan üretimde kullanılır.
@@ -20,7 +19,7 @@ python -m venv .venv
 # source .venv/bin/activate && pip install -r requirements.txt   # Linux/Mac
 ```
 
-TCMB EVDS'ten ücretsiz bir API anahtarı alın ([evds2.tcmb.gov.tr](https://evds3.tcmb.gov.tr)) ve repo kökünde bir `.env` dosyası oluşturun:
+TCMB EVDS'ten ücretsiz bir API anahtarı alın ([evds3.tcmb.gov.tr](https://evds3.tcmb.gov.tr)) ve repo kökünde bir `.env` dosyası oluşturun:
 
 ```
 TCMB_API_KEY=your_key_here

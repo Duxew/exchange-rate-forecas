@@ -1,0 +1,52 @@
+name: Gunluk veri yenileme
+
+on:
+  schedule:
+    # 05:00 UTC ~= 08:00 Turkiye saati
+    - cron: "0 5 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: cmdstan onbellegi
+        uses: actions/cache@v4
+        with:
+          path: ~/.cmdstan
+          key: cmdstan-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
+
+      - name: Bagimliliklari kur
+        run: pip install -r requirements.txt
+
+      - name: Veriyi cek (main.py)
+        env:
+          TCMB_API_KEY: ${{ secrets.TCMB_API_KEY }}
+        run: python main.py
+
+      - name: Modelleri egit ve tahmin uret (forecast.py)
+        run: python forecast.py
+
+      - name: Gecmis dogruluk hesapla (accuracy.py)
+        run: python accuracy.py
+
+      - name: Sonuclari commit'le
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/forecasts data/metrics data/forecast_history data/accuracy
+          if git diff --staged --quiet; then
+            echo "Degisiklik yok, commit atlaniyor."
+          else
+            git commit -m "chore: otomatik veri yenileme $(date -u +%Y-%m-%d)"
+            git push
+          fi

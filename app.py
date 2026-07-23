@@ -223,6 +223,33 @@ with tab_karsilastir:
             shared_max = min(cf.max()["ds"].date() for _, _, cf, _ in compare_data.values())
             shared_default = min(date.today() + timedelta(days=30), shared_max)
 
+            b1, b2, b3 = st.columns(3)
+            with b1:
+                base_currency = st.selectbox(
+                    "Baz döviz",
+                    selected_currencies,
+                    format_func=lambda code: f"{code} - {CURRENCY_NAMES.get(code, code)}",
+                    help="Diğer dövizlerin birim fiyatı, bugünün kuruyla bu dövizdeki "
+                    "tutara eşdeğer olacak şekilde otomatik hesaplanır.",
+                    key="compare_base_currency",
+                )
+            with b2:
+                compare_quantity = st.number_input(
+                    "Miktar (adet, tüm dövizler için ortak)",
+                    min_value=1,
+                    value=100,
+                    step=1,
+                    key="compare_quantity",
+                )
+            with b3:
+                base_unit_price = st.number_input(
+                    f"Birim fiyat ({base_currency})",
+                    min_value=0.0,
+                    value=10.0,
+                    step=0.5,
+                    key="compare_base_unit_price",
+                )
+
             compare_date = st.date_input(
                 "Ödeme / teslim tarihi (tüm dövizler için ortak)",
                 value=shared_default,
@@ -231,29 +258,28 @@ with tab_karsilastir:
                 key="compare_date",
             )
 
-            st.write("")
-            cols = st.columns(len(selected_currencies))
-            row_inputs = {}
-            for col, code in zip(cols, selected_currencies):
-                with col:
-                    st.caption(f"**{code}**")
-                    row_inputs[code] = (
-                        st.number_input("Miktar", min_value=1, value=100, step=1, key=f"cmp_qty_{code}"),
-                        st.number_input(
-                            f"Birim fiyat ({code})", min_value=0.0, value=10.0, step=0.5, key=f"cmp_price_{code}"
-                        ),
-                    )
+            # Baz dovizin BUGUNKU TRY karsiligi sabit tutulup, diger her doviz
+            # icin ayni TRY tutarina bugun esdeger olan birim fiyat geriye dogru
+            # hesaplanir - boylece karsilastirma "ayni degerde iki teklif, farkli
+            # para biriminde verilse ileride ne fark eder" sorusuna cevap verir.
+            # Miktar/birim fiyati her doviz icin ayri ayri elle girmek (onceki
+            # tasarim) esdeger olmayan, keyfi tutarlari kiyasliyordu.
+            base_rate = compare_data[base_currency][0]
+            base_try_value = compare_quantity * base_unit_price * base_rate
 
             rows = []
             for code in selected_currencies:
                 c_rate, c_rate_date, c_forecast, c_metrics = compare_data[code]
-                c_quantity, c_unit_price = row_inputs[code]
+                c_unit_price = (
+                    base_unit_price if code == base_currency else base_try_value / (compare_quantity * c_rate)
+                )
                 c_quote = compute_quote(
-                    c_rate, c_rate_date, c_forecast, c_metrics["mape"], c_quantity, c_unit_price, compare_date
+                    c_rate, c_rate_date, c_forecast, c_metrics["mape"], compare_quantity, c_unit_price, compare_date
                 )
                 rows.append(
                     {
                         "Döviz": code,
+                        "Birim fiyat": c_unit_price,
                         "Güncel fiyat (TRY)": c_quote["current_price_try"],
                         "Önerilen teklif (TRY)": c_quote["recommended_price_try"],
                         "Kur riski payı (TRY)": c_quote["risk_try"],
@@ -263,6 +289,10 @@ with tab_karsilastir:
 
             comparison_df = pd.DataFrame(rows).sort_values("Önerilen teklif (TRY)").reset_index(drop=True)
             cheapest = comparison_df.iloc[0]
+            st.caption(
+                f"{compare_quantity} adet × {base_currency} {base_unit_price:,.2f} bugünün kuruyla diğer "
+                "dövizlere eşdeğer birim fiyata çevrilip karşılaştırılıyor."
+            )
             st.success(
                 f"En avantajlı: **{cheapest['Döviz']}** — {cheapest['Önerilen teklif (TRY)']:,.2f} TRY "
                 f"({compare_date} için)"
@@ -270,6 +300,7 @@ with tab_karsilastir:
             st.dataframe(
                 comparison_df.style.format(
                     {
+                        "Birim fiyat": "{:,.4f}",
                         "Güncel fiyat (TRY)": "{:,.2f}",
                         "Önerilen teklif (TRY)": "{:,.2f}",
                         "Kur riski payı (TRY)": "{:,.2f}",

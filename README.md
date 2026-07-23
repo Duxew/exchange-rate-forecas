@@ -43,6 +43,14 @@ TCMB_API_KEY=your_key_here
 
 Opsiyonel: `compare_models.py`, Prophet ve ARIMA'yı 7/30/90 günlük ufuklarda karşılaştıran daha derin bir analiz raporu üretir (şu an sadece USD/EUR için ayrıntılı çalıştırılmıştır, tüm dövizlerde yavaştır).
 
+## Testler
+
+```bash
+.venv\Scripts\python.exe -m pytest
+```
+
+`tests/`, pipeline'ın hızlı/saf mantık kısımlarını kapsar (path helper'lar, veri okuma, pencereleme, doğruluk hesaplama, tahmin geçmişi biriktirme) — gerçek Prophet/ARIMA eğitimi gerektiren fonksiyonlar kasıtlı olarak dışarıda tutulur (saniyeler-dakikalar sürer, cmdstan gerektirir). Testler `data/` altındaki gerçek dosyalara hiç dokunmaz, hepsi izole geçici dosyalarla çalışır.
+
 ## Nasıl çalışır
 
 ```
@@ -78,6 +86,7 @@ accuracy.py           geçmiş tahminlerin gerçekleşen doğruluğunu ölçer
 compare_models.py     Prophet vs ARIMA derin karşılaştırma (analiz amaçlı)
 app.py                Streamlit fiyatlandırma arayüzü
 data/                üretilen veri/tahmin/metrik/doğruluk dosyaları
+tests/                pytest test paketi (bkz. "Testler")
 ONERI_DOKUMANI.md     şirket sürecine entegrasyon için öneri dokümanı
 ```
 

@@ -2,16 +2,17 @@
 Doviz bazli urun fiyatlandirma araci.
 
 Kullanici; miktar, birim fiyat (doviz cinsinden) ve odeme/teslim tarihi girer.
-Uygulama, guncel kuru ve Prophet modelinin ilgili tarih icin urettigi tahmin
-araligini (yhat_lower / yhat / yhat_upper) kullanarak TRY fiyatini ve kur
-riski payini hesaplar.
+Uygulama, guncel kuru ve secilen modelin (Prophet veya ARIMA) ilgili tarih icin
+urettigi tahmin araligini (yhat_lower / yhat / yhat_upper) kullanarak onerilen
+teklif fiyatini, kur riski payini ve tahmin araligini hesaplar.
 
-Bu uygulama forecast.py tarafindan onceden uretilmis forecast_*.csv ve
-metrics_*.json dosyalarini okur (Prophet'i her seferinde yeniden egitmek
-yavas oldugu icin). Once su iki scripti calistirmis olmak gerekir:
+Bu uygulama forecast.py/accuracy.py tarafindan onceden uretilmis dosyalari okur
+(modeli her seferinde yeniden egitmek yavas oldugu icin). Once su scriptleri
+calistirmis olmak gerekir:
 
     .venv\\Scripts\\python.exe main.py
     .venv\\Scripts\\python.exe forecast.py
+    .venv\\Scripts\\python.exe accuracy.py
 
 Calistirmak icin:
     .venv\\Scripts\\python.exe -m streamlit run app.py
@@ -35,7 +36,17 @@ from forecasting import (
 
 HISTORY_DISPLAY_DAYS = 180  # grafikte gosterilecek gecmis veri uzunlugu
 
-st.set_page_config(page_title="Doviz Bazli Fiyatlandirma", page_icon="\U0001F4B1")
+# ONERI_DOKUMANI.md'deki guven tablosuyla birebir ayni esik (%1 alti = yuksek guven).
+HIGH_CONFIDENCE_MAPE_THRESHOLD = 1.0
+
+# dataviz referans paletinin kategorik 1. (mavi) ve 2. (turuncu) slotlari.
+COLOR_HISTORY = "#2a78d6"
+COLOR_FORECAST = "#eb6834"
+
+st.set_page_config(
+    page_title="Döviz Bazlı Fiyatlandırma",
+    page_icon=":material/currency_exchange:",
+)
 
 CURRENCIES = {
     code: {
@@ -78,21 +89,21 @@ def load_accuracy(accuracy_path):
         return json.load(f)
 
 
-st.title("\U0001F4B1 Doviz Bazli Urun Fiyatlandirma")
+st.title("Döviz Bazlı Ürün Fiyatlandırma")
 st.caption(
-    "TCMB EVDS'in yayinladigi tum aktif doviz kurlari icin Prophet tahmin "
-    "modeline dayali fiyatlandirma ve kur riski araci."
+    "TCMB EVDS'in yayınladığı tüm aktif döviz kurları için tahmin modeline "
+    "dayalı fiyatlandırma ve kur riski aracı."
 )
 
 col1, col2 = st.columns(2)
 with col1:
     currency = st.selectbox(
-        "Doviz cinsi",
+        "Döviz cinsi",
         list(CURRENCIES.keys()),
         format_func=lambda code: f"{code} - {CURRENCY_NAMES.get(code, code)}",
     )
 with col2:
-    quantity = st.number_input("Urun miktari (adet)", min_value=1, value=100, step=1)
+    quantity = st.number_input("Ürün miktarı (adet)", min_value=1, value=100, step=1)
 
 unit_price = st.number_input(
     f"Birim fiyat ({currency})", min_value=0.0, value=10.0, step=0.5
@@ -105,8 +116,8 @@ try:
     metrics = load_metrics(paths["metrics"])
 except FileNotFoundError as e:
     st.error(
-        f"Gerekli veri dosyasi bulunamadi: {e.filename}\n\n"
-        f"{currency} icin once terminalde sirasiyla su iki scripti calistirin:\n"
+        f"Gerekli veri dosyası bulunamadı: {e.filename}\n\n"
+        f"{currency} için önce terminalde sırasıyla şu scriptleri çalıştırın:\n"
         "1) `python main.py`\n2) `python forecast.py`"
     )
     st.stop()
@@ -116,7 +127,7 @@ max_date = forecast_df["ds"].max().date()
 default_target = min(date.today() + timedelta(days=30), max_date)
 
 target_date = st.date_input(
-    "Odeme / teslim tarihi",
+    "Ödeme / teslim tarihi",
     value=default_target,
     min_value=min_date,
     max_value=max_date,
@@ -133,132 +144,153 @@ low_price_try = foreign_amount * closest["yhat_lower"]
 high_price_try = foreign_amount * closest["yhat_upper"]
 
 # Model ust sinirin altinda bir kur da ongorebilir (kur dususu bekleniyor demektir).
-# Bu durumda payi 0'da tabanlamak yerine oldugu gibi negatif gosteriyoruz -
-# kullaniciya "modele gore kur su kadar dusebilir" bilgisini de veriyor.
+# Ham payi (negatif olabilir) hala hesaplayip gosteriyoruz, ama onerilen teklif
+# fiyatina sadece pozitifse ekliyoruz - bkz. asagidaki recommended_price_try.
 risk_try = high_price_try - current_price_try
 risk_pct = (closest["yhat_upper"] - current_rate) / current_rate * 100
 
-st.divider()
-st.subheader("Sonuclar")
+# ONERI_DOKUMANI.md'nin onerdigi fiyatlandirma kurali: "guncel kura gore fiyat +
+# kur riski payi". Model dusus ongoruyorsa (risk_try negatif) fiyati asagi
+# cekmek yerine guncel fiyatta birakiyoruz - dokumanin "teklif yine de temkinli
+# verilmeli" notuyla tutarli.
+recommended_price_try = current_price_try + max(risk_try, 0)
 
-st.metric(f"Guncel kur ({current_rate_date.date()})", f"{current_rate:.4f} TRY")
+tab_teklif, tab_grafik, tab_detay = st.tabs(["Teklif", "Grafik", "Model Detayları"])
 
-m1, m2, m3 = st.columns(3)
-m1.metric("Guncel kura gore fiyat", f"{current_price_try:,.2f} TRY")
-m2.metric(
-    f"Tahmini fiyat ({closest['ds'].date()})", f"{expected_price_try:,.2f} TRY"
-)
-# st.metric, delta metnindeki ok/renk yonunu ilk karakterin +/- olmasina
-# bakarak seciyor. Turkce "%X" bicimini korumak icin isareti basa alip
-# yuzde isaretini ondan sonra koyuyoruz (ornek: "-%1.82"), yoksa "%" onek
-# oldugundan negatif deger de yesil/yukari ok ile gosteriliyordu.
-if risk_try >= 0:
-    m3.metric("Kur riski payi (ust sinira gore)", f"+{risk_try:,.2f} TRY", f"+%{risk_pct:.2f}")
-else:
-    m3.metric("Kur riski payi (ust sinira gore)", f"{risk_try:,.2f} TRY", f"-%{abs(risk_pct):.2f}")
-
-st.write(
-    f"**Tahmini fiyat araligi ({closest['ds'].date()}):** "
-    f"{low_price_try:,.2f} TRY -- {high_price_try:,.2f} TRY"
-)
-
-st.caption(
-    f"Model: {metrics['model'].upper()} "
-    f"({currency}/TRY, son {metrics['test_size']} is gunu backtest): "
-    f"MAE={metrics['mae']:.4f} TRY, RMSE={metrics['rmse']:.4f} TRY, "
-    f"MAPE=%{metrics['mape']:.2f}"
-)
-
-st.subheader("Gecmis kur ve tahmin araligi")
-
-history_df = load_history(paths["data"])
-recent_history = history_df[
-    history_df["date"] >= history_df["date"].max() - pd.Timedelta(days=HISTORY_DISPLAY_DAYS)
-]
-
-# Egilimin daha net gorunmesi icin y eksenini 0'dan degil, verinin araligindan
-# baslatiyoruz (alt.Scale(zero=False)).
-y_min = min(recent_history["rate"].min(), forecast_df["yhat_lower"].min())
-y_max = max(recent_history["rate"].max(), forecast_df["yhat_upper"].max())
-y_scale = alt.Scale(domain=[y_min * 0.98, y_max * 1.02], zero=False)
-
-band = (
-    alt.Chart(forecast_df)
-    .mark_area(opacity=0.2, color="#ff8c42")
-    .encode(
-        x=alt.X("ds:T", title="Tarih"),
-        y=alt.Y("yhat_lower:Q", title=f"{currency}/TRY", scale=y_scale),
-        y2="yhat_upper:Q",
-    )
-)
-forecast_line = (
-    alt.Chart(forecast_df)
-    .mark_line(color="#ff8c42", strokeDash=[5, 3])
-    .encode(x="ds:T", y=alt.Y("yhat:Q", scale=y_scale), tooltip=["ds:T", "yhat:Q"])
-)
-history_line = (
-    alt.Chart(recent_history)
-    .mark_line(color="#4c78a8")
-    .encode(x="date:T", y=alt.Y("rate:Q", scale=y_scale), tooltip=["date:T", "rate:Q"])
-)
-target_rule = (
-    alt.Chart(pd.DataFrame({"d": [pd.Timestamp(target_date)]}))
-    .mark_rule(color="red", strokeDash=[2, 2])
-    .encode(x="d:T")
-)
-
-chart = (band + history_line + forecast_line + target_rule).properties(height=380).interactive()
-st.altair_chart(chart, use_container_width=True)
-st.caption(
-    "Mavi çizgi: gerçekleşen kur (son "
-    f"{HISTORY_DISPLAY_DAYS} gün). Turuncu kesikli çizgi: tahmin (yhat), turuncu "
-    "bant: belirsizlik aralığı (yhat_lower–yhat_upper). Kırmızı kesikli çizgi: "
-    "seçilen ödeme/teslim tarihi."
-)
-
-st.divider()
-st.subheader("Model doğruluk geçmişi")
-
-try:
-    accuracy = load_accuracy(paths["accuracy"])
-except FileNotFoundError:
-    st.info(
-        "Bu döviz için henüz yeterli geçmiş tahmin verisi birikmedi. "
-        "Otomatik günlük yenileme başladıktan bir süre sonra (tahminlerin "
-        "hedeflediği tarihler gerçekleştikçe) burada gerçekleşen isabet oranı "
-        "görünecek."
-    )
-else:
-    st.caption(
-        f"Geçmişte üretilen tahminlerin, hedefledikleri tarih gerçekleştikten sonra "
-        f"gerçek kurla karşılaştırılmasına dayanır ({accuracy['n_observations']} "
-        f"gözlem, son güncelleme: {accuracy['last_updated']})."
-    )
-    a1, a2, a3 = st.columns(3)
-    a1.metric("Gerçekleşen MAPE (genel)", f"%{accuracy['overall_mape']:.2f}")
-    a2.metric("Gerçekleşen MAE", f"{accuracy['overall_mae']:.4f} TRY")
-    a3.metric("Gerçekleşen RMSE", f"{accuracy['overall_rmse']:.4f} TRY")
-
-    by_horizon = accuracy["by_horizon"]
-    if by_horizon:
-        horizon_df = pd.DataFrame(
-            [
-                {"Ufuk (gün)": label, "MAPE (%)": vals["mape"], "Gözlem": vals["n_observations"]}
-                for label, vals in by_horizon.items()
-            ]
+with tab_teklif:
+    with st.container(border=True):
+        st.caption("Önerilen teklif fiyatı")
+        st.markdown(
+            f"<div style='font-size:3rem;font-weight:700;line-height:1.15'>"
+            f"{recommended_price_try:,.2f} TRY</div>",
+            unsafe_allow_html=True,
         )
-        horizon_chart = (
-            alt.Chart(horizon_df)
-            .mark_bar(color="#4c78a8")
-            .encode(
-                x=alt.X("Ufuk (gün):N", sort=None),
-                y=alt.Y("MAPE (%):Q"),
-                tooltip=["Ufuk (gün)", "MAPE (%)", "Gözlem"],
+        if risk_try > 0:
+            st.write(
+                f"Güncel fiyatın üzerine %{risk_pct:.2f} kur riski payı eklendi "
+                f"(+{risk_try:,.2f} TRY)."
             )
-            .properties(height=220)
+        else:
+            st.write("Model bir düşüş öngörüyor, ek bir güvenlik payına gerek görülmedi.")
+
+        if metrics["mape"] < HIGH_CONFIDENCE_MAPE_THRESHOLD:
+            st.badge("Güven: Yüksek", icon=":material/check_circle:", color="green")
+        else:
+            st.badge("Güven: Orta", icon=":material/error:", color="orange")
+
+    st.write("")
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        st.caption(f"Güncel kur ({current_rate_date.date()})")
+        st.write(f"{current_rate:.4f} TRY")
+    with c2:
+        st.caption("Güncel fiyat")
+        st.write(f"{current_price_try:,.2f} TRY")
+    with c3:
+        st.caption(f"Tahmini aralık ({closest['ds'].date()})")
+        st.write(f"{low_price_try:,.2f} – {high_price_try:,.2f} TRY")
+
+with tab_grafik:
+    with st.container(border=True):
+        history_df = load_history(paths["data"])
+        recent_history = history_df[
+            history_df["date"] >= history_df["date"].max() - pd.Timedelta(days=HISTORY_DISPLAY_DAYS)
+        ]
+
+        # Egilimin daha net gorunmesi icin y eksenini 0'dan degil, verinin
+        # araligindan baslatiyoruz (alt.Scale(zero=False)).
+        y_min = min(recent_history["rate"].min(), forecast_df["yhat_lower"].min())
+        y_max = max(recent_history["rate"].max(), forecast_df["yhat_upper"].max())
+        y_scale = alt.Scale(domain=[y_min * 0.98, y_max * 1.02], zero=False)
+
+        band = (
+            alt.Chart(forecast_df)
+            .mark_area(opacity=0.15, color=COLOR_FORECAST)
+            .encode(
+                x=alt.X("ds:T", title="Tarih"),
+                y=alt.Y("yhat_lower:Q", title=f"{currency}/TRY", scale=y_scale),
+                y2="yhat_upper:Q",
+            )
         )
-        st.altair_chart(horizon_chart, use_container_width=True)
+        forecast_line = (
+            alt.Chart(forecast_df)
+            .mark_line(color=COLOR_FORECAST, strokeWidth=2, strokeDash=[5, 3])
+            .encode(x="ds:T", y=alt.Y("yhat:Q", scale=y_scale), tooltip=["ds:T", "yhat:Q"])
+        )
+        history_line = (
+            alt.Chart(recent_history)
+            .mark_line(color=COLOR_HISTORY, strokeWidth=2)
+            .encode(x="date:T", y=alt.Y("rate:Q", scale=y_scale), tooltip=["date:T", "rate:Q"])
+        )
+        target_rule = (
+            alt.Chart(pd.DataFrame({"d": [pd.Timestamp(target_date)]}))
+            .mark_rule(color=COLOR_FORECAST, strokeDash=[2, 2])
+            .encode(x="d:T")
+        )
+
+        chart = (band + history_line + forecast_line + target_rule).properties(height=380).interactive()
+        st.altair_chart(chart, use_container_width=True)
         st.caption(
-            "Tahmin üretildikten kaç gün sonrasını hedeflediğine göre gruplanmış "
-            "gerçekleşen MAPE (kısa ufuk genelde daha isabetlidir)."
+            "Mavi çizgi: gerçekleşen kur (son "
+            f"{HISTORY_DISPLAY_DAYS} gün). Turuncu kesikli çizgi: tahmin (yhat), turuncu "
+            "bant: belirsizlik aralığı (yhat_lower–yhat_upper). Dikey kesikli çizgi: "
+            "seçilen ödeme/teslim tarihi."
         )
+
+with tab_detay:
+    st.subheader("Backtest metrikleri")
+    st.caption(
+        f"Model: {metrics['model'].upper()} ({currency}/TRY, son "
+        f"{metrics['test_size']} iş günü backtest)"
+    )
+    d1, d2, d3 = st.columns(3)
+    d1.metric("MAE", f"{metrics['mae']:.4f} TRY")
+    d2.metric("RMSE", f"{metrics['rmse']:.4f} TRY")
+    d3.metric("MAPE", f"%{metrics['mape']:.2f}")
+
+    st.divider()
+    st.subheader("Model doğruluk geçmişi")
+
+    try:
+        accuracy = load_accuracy(paths["accuracy"])
+    except FileNotFoundError:
+        st.info(
+            "Bu döviz için henüz yeterli geçmiş tahmin verisi birikmedi. "
+            "Otomatik günlük yenileme başladıktan bir süre sonra (tahminlerin "
+            "hedeflediği tarihler gerçekleştikçe) burada gerçekleşen isabet oranı "
+            "görünecek."
+        )
+    else:
+        st.caption(
+            f"Geçmişte üretilen tahminlerin, hedefledikleri tarih gerçekleştikten sonra "
+            f"gerçek kurla karşılaştırılmasına dayanır ({accuracy['n_observations']} "
+            f"gözlem, son güncelleme: {accuracy['last_updated']})."
+        )
+        a1, a2, a3 = st.columns(3)
+        a1.metric("Gerçekleşen MAPE (genel)", f"%{accuracy['overall_mape']:.2f}")
+        a2.metric("Gerçekleşen MAE", f"{accuracy['overall_mae']:.4f} TRY")
+        a3.metric("Gerçekleşen RMSE", f"{accuracy['overall_rmse']:.4f} TRY")
+
+        by_horizon = accuracy["by_horizon"]
+        if by_horizon:
+            horizon_df = pd.DataFrame(
+                [
+                    {"Ufuk (gün)": label, "MAPE (%)": vals["mape"], "Gözlem": vals["n_observations"]}
+                    for label, vals in by_horizon.items()
+                ]
+            )
+            horizon_chart = (
+                alt.Chart(horizon_df)
+                .mark_bar(color=COLOR_HISTORY)
+                .encode(
+                    x=alt.X("Ufuk (gün):N", sort=None),
+                    y=alt.Y("MAPE (%):Q"),
+                    tooltip=["Ufuk (gün)", "MAPE (%)", "Gözlem"],
+                )
+                .properties(height=220)
+            )
+            st.altair_chart(horizon_chart, use_container_width=True)
+            st.caption(
+                "Tahmin üretildikten kaç gün sonrasını hedeflediğine göre gruplanmış "
+                "gerçekleşen MAPE (kısa ufuk genelde daha isabetlidir)."
+            )

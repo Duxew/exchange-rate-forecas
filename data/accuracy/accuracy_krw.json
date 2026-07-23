@@ -1,0 +1,9 @@
+{
+  "currency": "KRW",
+  "n_observations": 1,
+  "overall_mae": 0.0005679329676631963,
+  "overall_rmse": 0.0005679329676631963,
+  "overall_mape": 1.7932837627508567,
+  "by_horizon": {},
+  "last_updated": "2026-07-23"
+}

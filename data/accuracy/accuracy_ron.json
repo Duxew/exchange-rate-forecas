@@ -1,0 +1,9 @@
+{
+  "currency": "RON",
+  "n_observations": 1,
+  "overall_mae": 0.07791888713731154,
+  "overall_rmse": 0.07791888713731154,
+  "overall_mape": 0.7635438577282633,
+  "by_horizon": {},
+  "last_updated": "2026-07-23"
+}

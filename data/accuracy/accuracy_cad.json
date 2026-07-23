@@ -1,0 +1,9 @@
+{
+  "currency": "CAD",
+  "n_observations": 1,
+  "overall_mae": 0.0810950275790816,
+  "overall_rmse": 0.0810950275790816,
+  "overall_mape": 0.24285474413064528,
+  "by_horizon": {},
+  "last_updated": "2026-07-23"
+}

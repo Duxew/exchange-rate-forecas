@@ -1,0 +1,9 @@
+{
+  "currency": "RUB",
+  "n_observations": 1,
+  "overall_mae": 0.0010622837646082628,
+  "overall_rmse": 0.0010622837646082628,
+  "overall_mape": 0.17829236914591276,
+  "by_horizon": {},
+  "last_updated": "2026-07-23"
+}

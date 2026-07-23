@@ -1,0 +1,9 @@
+{
+  "currency": "CNY",
+  "n_observations": 1,
+  "overall_mae": 0.009409732540775373,
+  "overall_rmse": 0.009409732540775373,
+  "overall_mape": 0.13598665444209743,
+  "by_horizon": {},
+  "last_updated": "2026-07-23"
+}

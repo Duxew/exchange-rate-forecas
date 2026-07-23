@@ -1,0 +1,9 @@
+{
+  "currency": "PKR",
+  "n_observations": 1,
+  "overall_mae": 8.04862532650108e-05,
+  "overall_rmse": 8.04862532650108e-05,
+  "overall_mape": 0.047712521942623036,
+  "by_horizon": {},
+  "last_updated": "2026-07-23"
+}

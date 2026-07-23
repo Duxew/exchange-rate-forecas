@@ -1,0 +1,9 @@
+{
+  "currency": "EUR",
+  "n_observations": 1,
+  "overall_mae": 0.047799953555326624,
+  "overall_rmse": 0.047799953555326624,
+  "overall_mape": 0.08890351644498415,
+  "by_horizon": {},
+  "last_updated": "2026-07-23"
+}

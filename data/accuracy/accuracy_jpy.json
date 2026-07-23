@@ -1,0 +1,9 @@
+{
+  "currency": "JPY",
+  "n_observations": 1,
+  "overall_mae": 0.07722722044677965,
+  "overall_rmse": 0.07722722044677965,
+  "overall_mape": 0.2677660869890735,
+  "by_horizon": {},
+  "last_updated": "2026-07-23"
+}

@@ -204,15 +204,24 @@ with tab_grafik:
             history_df["date"] >= history_df["date"].max() - pd.Timedelta(days=HISTORY_DISPLAY_DAYS)
         ]
 
-        # Egilimin daha net gorunmesi icin y eksenini 0'dan degil, verinin
-        # araligindan baslatiyoruz (alt.Scale(zero=False)).
-        y_min = min(recent_history["rate"].min(), forecast_df["yhat_lower"].min())
-        y_max = max(recent_history["rate"].max(), forecast_df["yhat_upper"].max())
-        y_scale = alt.Scale(domain=[y_min * 0.98, y_max * 1.02], zero=False)
+        # Eksen olceklendirmesi gercekleşen kur + nokta tahmine (yhat) gore
+        # yapilir, yhat_lower/yhat_upper'in en uc degerlerine gore DEGIL. ARIMA
+        # secilen dovizlerde (ornegin EUR, GBP, NOK) belirsizlik araligi ufkun
+        # sonuna dogru cok genisleyebiliyor (30-90 gunde +/-5 TRY gibi); eksen
+        # bu en uc degerlere gore olceklenirse gercek kur cizgisi grafigin kucuk
+        # bir kismina sikisip okunmasi zorlasiyor (tutulan nokta ile eksenin
+        # gosterdigi deger arasinda gorsel uyumsuzluk). Bant yine de ciziliyor,
+        # sadece gorunur alanin disina tasan kismi kirpiliyor (clip=True) - bu,
+        # "buradan sonra belirsizlik cok daha buyuk" bilgisini dogru bicimde
+        # (abartmadan) tasimaya devam ediyor.
+        narrow_min = min(recent_history["rate"].min(), forecast_df["yhat"].min())
+        narrow_max = max(recent_history["rate"].max(), forecast_df["yhat"].max())
+        padding = max((narrow_max - narrow_min) * 0.15, narrow_max * 0.01)
+        y_scale = alt.Scale(domain=[narrow_min - padding, narrow_max + padding], zero=False)
 
         band = (
             alt.Chart(forecast_df)
-            .mark_area(opacity=0.15, color=COLOR_FORECAST)
+            .mark_area(opacity=0.15, color=COLOR_FORECAST, clip=True)
             .encode(
                 x=alt.X("ds:T", title="Tarih"),
                 y=alt.Y("yhat_lower:Q", title=f"{currency}/TRY", scale=y_scale),
@@ -221,7 +230,7 @@ with tab_grafik:
         )
         forecast_line = (
             alt.Chart(forecast_df)
-            .mark_line(color=COLOR_FORECAST, strokeWidth=2, strokeDash=[5, 3])
+            .mark_line(color=COLOR_FORECAST, strokeWidth=2, strokeDash=[5, 3], clip=True)
             .encode(x="ds:T", y=alt.Y("yhat:Q", scale=y_scale), tooltip=["ds:T", "yhat:Q"])
         )
         history_line = (
@@ -240,8 +249,10 @@ with tab_grafik:
         st.caption(
             "Mavi çizgi: gerçekleşen kur (son "
             f"{HISTORY_DISPLAY_DAYS} gün). Turuncu kesikli çizgi: tahmin (yhat), turuncu "
-            "bant: belirsizlik aralığı (yhat_lower–yhat_upper). Dikey kesikli çizgi: "
-            "seçilen ödeme/teslim tarihi."
+            "bant: belirsizlik aralığı (yhat_lower–yhat_upper) — okunabilirlik için "
+            "eksen aralığı gerçekleşen kur ve tahmine göre ayarlanır, bant görünür "
+            "alanın dışına taşabilir (belirsizlik ufka doğru arttıkça normaldir). "
+            "Dikey kesikli çizgi: seçilen ödeme/teslim tarihi."
         )
 
 with tab_detay:

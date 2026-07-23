@@ -225,6 +225,19 @@ with tab_grafik:
         # cizgiye (yhat) degil altindaki genis banda denk geldiginde kafa
         # karistirici/yanlis gorunumlu degerler (ornegin "EUR/TRY: 51.99"
         # ama gorsel olarak cizgi 54.1'de) cikmasina yol aciyordu.
+        #
+        # Bant ve tahmin cizgisi AYNI forecast_tooltip'i kullanir (alt sinir,
+        # ortalama/yhat, ust sinir bir arada) - boylece kullanici hangisine
+        # tutunursa tutunsun (ince kesikli cizgiye tam denk gelmese bile) ayni
+        # eksiksiz bilgiyi gorur. Bu deseni forecast_df'i kullanan her doviz
+        # icin ortak app.py kodu urettigi icin ayarlama tum dovizlere otomatik
+        # uygulanir, tek tek her doviz icin ayri kod gerekmez.
+        forecast_tooltip = [
+            alt.Tooltip("ds:T", title="Tarih"),
+            alt.Tooltip("yhat_lower:Q", title="Alt sınır", format=",.4f"),
+            alt.Tooltip("yhat:Q", title="Ortalama (yhat)", format=",.4f"),
+            alt.Tooltip("yhat_upper:Q", title="Üst sınır", format=",.4f"),
+        ]
         band = (
             alt.Chart(forecast_df)
             .mark_area(opacity=0.15, color=COLOR_FORECAST, clip=True)
@@ -232,11 +245,7 @@ with tab_grafik:
                 x=alt.X("ds:T", title="Tarih"),
                 y=alt.Y("yhat_lower:Q", title=f"{currency}/TRY", scale=y_scale),
                 y2="yhat_upper:Q",
-                tooltip=[
-                    alt.Tooltip("ds:T", title="Tarih"),
-                    alt.Tooltip("yhat_lower:Q", title="Belirsizlik alt sınırı", format=",.4f"),
-                    alt.Tooltip("yhat_upper:Q", title="Belirsizlik üst sınırı", format=",.4f"),
-                ],
+                tooltip=forecast_tooltip,
             )
         )
         forecast_line = (
@@ -245,10 +254,7 @@ with tab_grafik:
             .encode(
                 x="ds:T",
                 y=alt.Y("yhat:Q", scale=y_scale),
-                tooltip=[
-                    alt.Tooltip("ds:T", title="Tarih"),
-                    alt.Tooltip("yhat:Q", title="Tahmin (yhat)", format=",.4f"),
-                ],
+                tooltip=forecast_tooltip,
             )
         )
         history_line = (

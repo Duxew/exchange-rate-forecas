@@ -7,7 +7,7 @@ birbirinden sapmiyor, ve Streamlit calistirmadan test edilebiliyor
 (bkz. tests/test_pricing.py).
 """
 
-# ONERI_DOKUMANI.md'deki guven tablosuyla birebir ayni esik (%1 alti = yuksek guven).
+# docs/ONERI_DOKUMANI.md'deki guven tablosuyla birebir ayni esik (%1 alti = yuksek guven).
 HIGH_CONFIDENCE_MAPE_THRESHOLD = 1.0
 
 
@@ -32,7 +32,7 @@ def compute_quote(current_rate, current_rate_date, forecast_df, mape, quantity, 
     risk_try = high_price_try - current_price_try
     risk_pct = (closest["yhat_upper"] - current_rate) / current_rate * 100
 
-    # ONERI_DOKUMANI.md'nin onerdigi fiyatlandirma kurali: "guncel kura gore
+    # docs/ONERI_DOKUMANI.md'nin onerdigi fiyatlandirma kurali: "guncel kura gore
     # fiyat + kur riski payi". Model dusus ongoruyorsa (risk_try negatif)
     # fiyati asagi cekmek yerine guncel fiyatta birakiyoruz - dokumanin
     # "teklif yine de temkinli verilmeli" notuyla tutarli.

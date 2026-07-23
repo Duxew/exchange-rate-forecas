@@ -5,6 +5,7 @@ __pycache__/
 .pytest_cache/
 .idea/
 .mcp.json
+.claude/
 CLAUDE.md
 
 # Ham veri API'den her an yeniden cekilebilir, repoda tutulmuyor. Uretilen

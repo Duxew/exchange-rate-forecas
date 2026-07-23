@@ -89,9 +89,9 @@ pricing.py            teklif fiyatı hesabı (Streamlit'ten bağımsız, test ed
 app.py                Streamlit fiyatlandırma arayüzü (Teklif / Karşılaştır / Grafik / Model Detayları)
 data/                üretilen veri/tahmin/metrik/doğruluk dosyaları
 tests/                pytest test paketi (bkz. "Testler")
-ONERI_DOKUMANI.md     şirket sürecine entegrasyon için öneri dokümanı
+docs/ONERI_DOKUMANI.md şirket sürecine entegrasyon için öneri dokümanı
 ```
 
 ## Sınırlamalar
 
-Bu bir yatırım/finansal tavsiye aracı değildir; model geçmiş fiyat hareketlerinden istatistiksel bir tahmin üretir ve ani ekonomik/politik olayları öngöremez. Ayrıntılı kullanım senaryosu ve riskler için `ONERI_DOKUMANI.md`'ye bakın.
+Bu bir yatırım/finansal tavsiye aracı değildir; model geçmiş fiyat hareketlerinden istatistiksel bir tahmin üretir ve ani ekonomik/politik olayları öngöremez. Ayrıntılı kullanım senaryosu ve riskler için `docs/ONERI_DOKUMANI.md`'ye bakın.

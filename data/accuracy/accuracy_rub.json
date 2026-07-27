@@ -1,16 +1,16 @@
 {
   "currency": "RUB",
-  "n_observations": 2,
-  "overall_mae": 0.014219954831871662,
-  "overall_rmse": 0.019373472154850576,
-  "overall_mape": 2.38296339213492,
+  "n_observations": 3,
+  "overall_mae": 0.017665734575137464,
+  "overall_rmse": 0.021242438170643436,
+  "overall_mape": 2.9529591145746696,
   "by_horizon": {
     "1-7": {
-      "mae": 0.02737762589913506,
-      "rmse": 0.02737762589913506,
-      "mape": 4.587634415123927,
-      "n_observations": 1
+      "mae": 0.025967459980402063,
+      "rmse": 0.026005721404186017,
+      "mape": 4.340292487289048,
+      "n_observations": 2
     }
   },
-  "last_updated": "2026-07-26"
+  "last_updated": "2026-07-27"
 }

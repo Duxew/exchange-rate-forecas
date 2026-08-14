@@ -1,16 +1,16 @@
 {
   "currency": "AED",
-  "n_observations": 16,
-  "overall_mae": 0.0059440206948468965,
-  "overall_rmse": 0.007841424392418753,
-  "overall_mape": 0.04632903818500243,
+  "n_observations": 17,
+  "overall_mae": 0.005632398124562954,
+  "overall_rmse": 0.007608914527313307,
+  "overall_mape": 0.04389831329154369,
   "by_horizon": {
     "1-7": {
-      "mae": 0.006091216554959781,
-      "rmse": 0.008040931411202802,
-      "mape": 0.047465771427180885,
-      "n_observations": 15
+      "mae": 0.005750917832776037,
+      "rmse": 0.007787275479066849,
+      "mape": 0.04481208040024483,
+      "n_observations": 16
     }
   },
-  "last_updated": "2026-08-13"
+  "last_updated": "2026-08-14"
 }

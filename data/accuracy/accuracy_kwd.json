@@ -1,16 +1,16 @@
 {
   "currency": "KWD",
-  "n_observations": 18,
-  "overall_mae": 0.23988199432887963,
-  "overall_rmse": 0.28401284358108153,
-  "overall_mape": 0.15605612179216455,
+  "n_observations": 19,
+  "overall_mae": 0.24963533420417525,
+  "overall_rmse": 0.29314362279384076,
+  "overall_mape": 0.16229566085976732,
   "by_horizon": {
     "1-7": {
-      "mae": 0.24727972230773537,
-      "rmse": 0.2909331639571906,
-      "mape": 0.1608271039195749,
-      "n_observations": 17
+      "mae": 0.25716392951061096,
+      "rmse": 0.29997286659698685,
+      "mape": 0.167148229483855,
+      "n_observations": 18
     }
   },
-  "last_updated": "2026-08-17"
+  "last_updated": "2026-08-18"
 }

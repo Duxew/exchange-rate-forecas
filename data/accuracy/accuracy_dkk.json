@@ -1,16 +1,16 @@
 {
   "currency": "DKK",
-  "n_observations": 19,
-  "overall_mae": 0.05512707798208398,
-  "overall_rmse": 0.06506150087384309,
-  "overall_mape": 0.7528437005316964,
+  "n_observations": 20,
+  "overall_mae": 0.056969215838739554,
+  "overall_rmse": 0.06666536941857476,
+  "overall_mape": 0.7773903578149648,
   "by_horizon": {
     "1-7": {
-      "mae": 0.057888805749841725,
-      "rmse": 0.06683214720631936,
-      "mape": 0.7904783563306665,
-      "n_observations": 18
+      "mae": 0.05968254413749192,
+      "rmse": 0.06838593914219684,
+      "mape": 0.8143361715867926,
+      "n_observations": 19
     }
   },
-  "last_updated": "2026-08-18"
+  "last_updated": "2026-08-19"
 }

@@ -1,16 +1,16 @@
 {
   "currency": "CNY",
-  "n_observations": 20,
-  "overall_mae": 0.0086175493969896,
-  "overall_rmse": 0.00981986238135791,
-  "overall_mape": 0.12329166127449469,
+  "n_observations": 21,
+  "overall_mae": 0.008972840024622075,
+  "overall_rmse": 0.010205313771048899,
+  "overall_mape": 0.12826368936047833,
   "by_horizon": {
     "1-7": {
-      "mae": 0.008575855547316663,
-      "rmse": 0.009840974698428899,
-      "mape": 0.12262350373935772,
-      "n_observations": 19
+      "mae": 0.00895099539881441,
+      "rmse": 0.010243470959562094,
+      "mape": 0.12787754110639737,
+      "n_observations": 20
     }
   },
-  "last_updated": "2026-08-19"
+  "last_updated": "2026-08-20"
 }

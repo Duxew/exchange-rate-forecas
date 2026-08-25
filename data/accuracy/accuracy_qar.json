@@ -1,16 +1,16 @@
 {
   "currency": "QAR",
-  "n_observations": 23,
-  "overall_mae": 0.005068115559455584,
-  "overall_rmse": 0.006956914853006062,
-  "overall_mape": 0.03909527634879114,
+  "n_observations": 24,
+  "overall_mae": 0.005165216038721221,
+  "overall_rmse": 0.006975873544283719,
+  "overall_mape": 0.03982098352190438,
   "by_horizon": {
     "1-7": {
-      "mae": 0.0051519440358844615,
-      "rmse": 0.0070799840057217825,
-      "mape": 0.039732554070505285,
-      "n_observations": 22
+      "mae": 0.005249621558751696,
+      "rmse": 0.007094131132730716,
+      "mape": 0.040462106002374994,
+      "n_observations": 23
     }
   },
-  "last_updated": "2026-08-24"
+  "last_updated": "2026-08-25"
 }

@@ -1,16 +1,16 @@
 {
   "currency": "RON",
-  "n_observations": 25,
-  "overall_mae": 0.14521512748188214,
-  "overall_rmse": 0.16441966117676776,
-  "overall_mape": 1.3939035070647823,
+  "n_observations": 26,
+  "overall_mae": 0.13987075846492925,
+  "overall_rmse": 0.16123141888567677,
+  "overall_mape": 1.3425640979197933,
   "by_horizon": {
     "1-7": {
-      "mae": 0.14801913749623927,
-      "rmse": 0.16705466564924698,
-      "mape": 1.420168492453804,
-      "n_observations": 24
+      "mae": 0.14234883331803394,
+      "rmse": 0.1636842666062179,
+      "mape": 1.3657249075274542,
+      "n_observations": 25
     }
   },
-  "last_updated": "2026-08-26"
+  "last_updated": "2026-08-27"
 }

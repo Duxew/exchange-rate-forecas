@@ -1,16 +1,16 @@
 {
   "currency": "SAR",
-  "n_observations": 25,
-  "overall_mae": 0.0072926076297532205,
-  "overall_rmse": 0.00829401025528898,
-  "overall_mape": 0.05758508212860497,
+  "n_observations": 26,
+  "overall_mae": 0.007210768120195132,
+  "overall_rmse": 0.00819577778084414,
+  "overall_mape": 0.05692314687477633,
   "by_horizon": {
     "1-7": {
-      "mae": 0.0071081774614805875,
-      "rmse": 0.008120015890339463,
-      "mape": 0.05609581997729662,
-      "n_observations": 24
+      "mae": 0.0070304415782710804,
+      "rmse": 0.008022734570733948,
+      "mape": 0.05546697779936715,
+      "n_observations": 25
     }
   },
-  "last_updated": "2026-08-26"
+  "last_updated": "2026-08-27"
 }

@@ -1,15 +1,15 @@
 {
   "model": "arima",
-  "mae": 0.17261855456307676,
-  "rmse": 0.21765498729772031,
-  "mape": 1.644170513973643,
+  "mae": 0.2068252729322716,
+  "rmse": 0.2509003332078759,
+  "mape": 1.9696978127055227,
   "test_size": 30,
   "changepoint_range": null,
   "arima_order": [
-    2,
+    3,
     1,
-    3
+    2
   ],
   "alternative_model": "prophet",
-  "alternative_mape": 2.2488175355814444
+  "alternative_mape": 2.309153435341357
 }

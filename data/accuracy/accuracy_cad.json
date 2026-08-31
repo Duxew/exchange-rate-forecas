@@ -1,16 +1,16 @@
 {
   "currency": "CAD",
-  "n_observations": 27,
-  "overall_mae": 0.3940161890063826,
-  "overall_rmse": 0.5031497384449011,
-  "overall_mape": 1.147453349904373,
+  "n_observations": 28,
+  "overall_mae": 0.38255334995738693,
+  "overall_rmse": 0.4942760969987424,
+  "overall_mape": 1.1140013308287466,
   "by_horizon": {
     "1-7": {
-      "mae": 0.406051618292048,
-      "rmse": 0.5124876883146186,
-      "mape": 1.1822456039725933,
-      "n_observations": 26
+      "mae": 0.3937184730084353,
+      "rmse": 0.5031041302385229,
+      "mape": 1.1462660192249725,
+      "n_observations": 27
     }
   },
-  "last_updated": "2026-08-30"
+  "last_updated": "2026-08-31"
 }

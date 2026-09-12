@@ -2,8 +2,8 @@
   "currency": "DKK",
   "n_observations": 37,
   "overall_mae": 0.07607547365752457,
-  "overall_rmse": 0.08647538912756775,
-  "overall_mape": 1.0255794561843836,
+  "overall_rmse": 0.08647538912756773,
+  "overall_mape": 1.0255794561843838,
   "by_horizon": {
     "1-7": {
       "mae": 0.07803823742127679,
@@ -12,5 +12,5 @@
       "n_observations": 36
     }
   },
-  "last_updated": "2026-09-11"
+  "last_updated": "2026-09-12"
 }

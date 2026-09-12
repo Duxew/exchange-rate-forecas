@@ -2,15 +2,15 @@
   "currency": "CHF",
   "n_observations": 37,
   "overall_mae": 0.39913436582691847,
-  "overall_rmse": 0.4928915807105705,
+  "overall_rmse": 0.49289158071057043,
   "overall_mape": 0.674837506353432,
   "by_horizon": {
     "1-7": {
       "mae": 0.4053590609135001,
       "rmse": 0.49883801675059597,
-      "mape": 0.6851825914309354,
+      "mape": 0.6851825914309353,
       "n_observations": 36
     }
   },
-  "last_updated": "2026-09-11"
+  "last_updated": "2026-09-12"
 }

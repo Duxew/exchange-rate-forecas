@@ -1,16 +1,16 @@
 {
   "currency": "EUR",
-  "n_observations": 40,
-  "overall_mae": 0.5143291944122383,
-  "overall_rmse": 0.6060878958535934,
-  "overall_mape": 0.9251165899918525,
+  "n_observations": 41,
+  "overall_mae": 0.502150676498085,
+  "overall_rmse": 0.5986555424531851,
+  "overall_mape": 0.9032057625166154,
   "by_horizon": {
     "1-7": {
-      "mae": 0.5262914826393387,
-      "rmse": 0.6137613472646698,
-      "mape": 0.9465579508520287,
-      "n_observations": 39
+      "mae": 0.5135094445716539,
+      "rmse": 0.6060454183340287,
+      "mape": 0.923563318668406,
+      "n_observations": 40
     }
   },
-  "last_updated": "2026-09-16"
+  "last_updated": "2026-09-17"
 }

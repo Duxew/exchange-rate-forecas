@@ -1,16 +1,16 @@
 {
   "currency": "JPY",
-  "n_observations": 41,
-  "overall_mae": 0.4674966656855128,
-  "overall_rmse": 0.6202165557359438,
-  "overall_mape": 1.5378309996521915,
+  "n_observations": 42,
+  "overall_mae": 0.4597809626779699,
+  "overall_rmse": 0.6131881135530908,
+  "overall_mape": 1.5121882685282135,
   "by_horizon": {
     "1-7": {
-      "mae": 0.4772534018164811,
-      "rmse": 0.627802667499695,
-      "mape": 1.5695826224687692,
-      "n_observations": 40
+      "mae": 0.46911154175677944,
+      "rmse": 0.6205037643748864,
+      "mape": 1.5425400290535582,
+      "n_observations": 41
     }
   },
-  "last_updated": "2026-09-17"
+  "last_updated": "2026-09-18"
 }

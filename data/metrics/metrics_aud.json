@@ -7,5 +7,5 @@
   "changepoint_range": 0.95,
   "arima_order": null,
   "alternative_model": "arima",
-  "alternative_mape": 1.5300772797112183
+  "alternative_mape": 1.5427911465156077
 }

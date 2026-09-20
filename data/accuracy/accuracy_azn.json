@@ -2,7 +2,7 @@
   "currency": "AZN",
   "n_observations": 42,
   "overall_mae": 0.016749829216741268,
-  "overall_rmse": 0.025889209916098426,
+  "overall_rmse": 0.025889209916098423,
   "overall_mape": 0.05977458774805418,
   "by_horizon": {
     "1-7": {
@@ -12,5 +12,5 @@
       "n_observations": 41
     }
   },
-  "last_updated": "2026-09-19"
+  "last_updated": "2026-09-20"
 }

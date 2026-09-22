@@ -1,16 +1,16 @@
 {
   "currency": "KRW",
-  "n_observations": 43,
-  "overall_mae": 0.0006582055693413355,
-  "overall_rmse": 0.0008568822823225423,
-  "overall_mape": 1.9725554329073782,
+  "n_observations": 44,
+  "overall_mae": 0.0006657759853128735,
+  "overall_rmse": 0.0008601706349538641,
+  "overall_mape": 1.9916384813915273,
   "by_horizon": {
     "1-7": {
-      "mae": 0.0006603549170003389,
-      "rmse": 0.0008625831045104292,
-      "mape": 1.976823806006343,
-      "n_observations": 42
+      "mae": 0.0006680514043279822,
+      "rmse": 0.0008657939907319696,
+      "mape": 1.9962513818250311,
+      "n_observations": 43
     }
   },
-  "last_updated": "2026-09-21"
+  "last_updated": "2026-09-22"
 }

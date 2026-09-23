@@ -1,16 +1,16 @@
 {
   "currency": "NOK",
-  "n_observations": 44,
-  "overall_mae": 0.07945319597046362,
-  "overall_rmse": 0.09781349575468742,
-  "overall_mape": 1.5529493139377433,
+  "n_observations": 45,
+  "overall_mae": 0.08009166851072527,
+  "overall_rmse": 0.09805587923034934,
+  "overall_mape": 1.5651036494806088,
   "by_horizon": {
     "1-7": {
-      "mae": 0.08107137726385931,
-      "rmse": 0.09893287286491591,
-      "mape": 1.5843703593380745,
-      "n_observations": 43
+      "mae": 0.0816875836960952,
+      "rmse": 0.09915272319859775,
+      "mape": 1.5960868151114522,
+      "n_observations": 44
     }
   },
-  "last_updated": "2026-09-22"
+  "last_updated": "2026-09-23"
 }

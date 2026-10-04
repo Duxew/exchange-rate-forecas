@@ -2,7 +2,7 @@
   "currency": "QAR",
   "n_observations": 52,
   "overall_mae": 0.005646804164158551,
-  "overall_rmse": 0.007344638074580981,
+  "overall_rmse": 0.007344638074580983,
   "overall_mape": 0.043052843024658706,
   "by_horizon": {
     "1-7": {
@@ -12,5 +12,5 @@
       "n_observations": 51
     }
   },
-  "last_updated": "2026-10-03"
+  "last_updated": "2026-10-04"
 }

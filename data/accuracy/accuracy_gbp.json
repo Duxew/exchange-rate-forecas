@@ -2,8 +2,8 @@
   "currency": "GBP",
   "n_observations": 52,
   "overall_mae": 0.3098390713909818,
-  "overall_rmse": 0.40443091924259406,
-  "overall_mape": 0.48051428063568574,
+  "overall_rmse": 0.4044309192425941,
+  "overall_mape": 0.48051428063568563,
   "by_horizon": {
     "1-7": {
       "mae": 0.3089439720708101,
@@ -12,5 +12,5 @@
       "n_observations": 51
     }
   },
-  "last_updated": "2026-10-03"
+  "last_updated": "2026-10-04"
 }

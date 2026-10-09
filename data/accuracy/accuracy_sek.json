@@ -1,16 +1,16 @@
 {
   "currency": "SEK",
-  "n_observations": 56,
-  "overall_mae": 0.0453568572701785,
-  "overall_rmse": 0.06006308752165134,
-  "overall_mape": 0.9132035586600338,
+  "n_observations": 57,
+  "overall_mae": 0.04607224206684038,
+  "overall_rmse": 0.060617176785793564,
+  "overall_mape": 0.9281137723454682,
   "by_horizon": {
     "1-7": {
-      "mae": 0.045808800129636285,
-      "rmse": 0.06054358625703675,
-      "mape": 0.922092096042796,
-      "n_observations": 55
+      "mae": 0.04652888924660538,
+      "rmse": 0.06109462083586418,
+      "mape": 0.9371098396622068,
+      "n_observations": 56
     }
   },
-  "last_updated": "2026-10-08"
+  "last_updated": "2026-10-09"
 }

@@ -2,8 +2,8 @@
   "currency": "SEK",
   "n_observations": 57,
   "overall_mae": 0.04607224206684038,
-  "overall_rmse": 0.060617176785793564,
-  "overall_mape": 0.9281137723454682,
+  "overall_rmse": 0.06061717678579356,
+  "overall_mape": 0.9281137723454683,
   "by_horizon": {
     "1-7": {
       "mae": 0.04652888924660538,
@@ -12,5 +12,5 @@
       "n_observations": 56
     }
   },
-  "last_updated": "2026-10-10"
+  "last_updated": "2026-10-11"
 }

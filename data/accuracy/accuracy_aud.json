@@ -1,16 +1,16 @@
 {
   "currency": "AUD",
-  "n_observations": 67,
-  "overall_mae": 0.38797754493528563,
-  "overall_rmse": 0.4824717444491303,
-  "overall_mape": 1.135384979865982,
+  "n_observations": 68,
+  "overall_mae": 0.38366319631387164,
+  "overall_rmse": 0.47904840490919814,
+  "overall_mape": 1.1226969233893418,
   "by_horizon": {
     "1-7": {
-      "mae": 0.3922847804646082,
-      "rmse": 0.4859454741025514,
-      "mape": 1.1478107986434567,
-      "n_observations": 66
+      "mae": 0.3878417514827354,
+      "rmse": 0.48244383724995976,
+      "mape": 1.1347479082077998,
+      "n_observations": 67
     }
   },
-  "last_updated": "2026-10-25"
+  "last_updated": "2026-10-26"
 }

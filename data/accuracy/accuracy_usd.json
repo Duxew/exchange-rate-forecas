@@ -1,16 +1,16 @@
 {
   "currency": "USD",
-  "n_observations": 71,
-  "overall_mae": 0.02503364168563248,
-  "overall_rmse": 0.03263175314211229,
-  "overall_mape": 0.05160890999721541,
+  "n_observations": 72,
+  "overall_mae": 0.02468992829130438,
+  "overall_rmse": 0.03240436895842727,
+  "overall_mape": 0.050900107722209376,
   "by_horizon": {
     "1-7": {
-      "mae": 0.025188760854928407,
-      "rmse": 0.0328203081962244,
-      "mape": 0.05191651662128824,
-      "n_observations": 70
+      "mae": 0.024838021649845037,
+      "rmse": 0.032588377358994905,
+      "mape": 0.051193398727985326,
+      "n_observations": 71
     }
   },
-  "last_updated": "2026-11-01"
+  "last_updated": "2026-11-02"
 }

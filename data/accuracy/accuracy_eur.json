@@ -2,15 +2,15 @@
   "currency": "EUR",
   "n_observations": 76,
   "overall_mae": 0.5560363572395399,
-  "overall_rmse": 0.6768980634401377,
-  "overall_mape": 1.0027722045979777,
+  "overall_rmse": 0.6768980634401378,
+  "overall_mape": 1.0027722045979774,
   "by_horizon": {
     "1-7": {
       "mae": 0.5628128426219962,
       "rmse": 0.6813734196401146,
-      "mape": 1.0149571204400174,
+      "mape": 1.0149571204400176,
       "n_observations": 75
     }
   },
-  "last_updated": "2026-11-07"
+  "last_updated": "2026-11-08"
 }

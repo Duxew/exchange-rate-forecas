@@ -3,14 +3,14 @@
   "n_observations": 81,
   "overall_mae": 0.2993097763703078,
   "overall_rmse": 0.3904032177077693,
-  "overall_mape": 0.8648273130594581,
+  "overall_mape": 0.864827313059458,
   "by_horizon": {
     "1-7": {
       "mae": 0.30203746073019816,
       "rmse": 0.3927310157828275,
-      "mape": 0.8726019701710682,
+      "mape": 0.8726019701710681,
       "n_observations": 80
     }
   },
-  "last_updated": "2026-11-14"
+  "last_updated": "2026-11-15"
 }

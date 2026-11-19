@@ -1,16 +1,16 @@
 {
   "currency": "AZN",
-  "n_observations": 84,
-  "overall_mae": 0.01993871290993033,
-  "overall_rmse": 0.026696418826982978,
-  "overall_mape": 0.06976122322588682,
+  "n_observations": 85,
+  "overall_mae": 0.02047290653549116,
+  "overall_rmse": 0.027469060403085905,
+  "overall_mape": 0.07155057947457999,
   "by_horizon": {
     "1-7": {
-      "mae": 0.020090361065918987,
-      "rmse": 0.02684463256559124,
-      "mape": 0.07028042210770269,
-      "n_observations": 83
+      "mae": 0.02062910880421282,
+      "rmse": 0.027620437154545232,
+      "mape": 0.07208489927743011,
+      "n_observations": 84
     }
   },
-  "last_updated": "2026-11-18"
+  "last_updated": "2026-11-19"
 }

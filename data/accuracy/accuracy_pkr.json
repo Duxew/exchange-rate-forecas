@@ -1,16 +1,16 @@
 {
   "currency": "PKR",
-  "n_observations": 84,
-  "overall_mae": 0.0001250884643595046,
-  "overall_rmse": 0.00014783822628864217,
-  "overall_mape": 0.07130119935849012,
+  "n_observations": 85,
+  "overall_mae": 0.00012648839944026332,
+  "overall_rmse": 0.0001493315435501041,
+  "overall_mape": 0.07204789762159207,
   "by_horizon": {
     "1-7": {
-      "mae": 0.00012562584039678767,
-      "rmse": 0.00014846352924498656,
-      "mape": 0.07158540029121141,
-      "n_observations": 83
+      "mae": 0.00012703604403758775,
+      "rmse": 0.00014996087999617855,
+      "mape": 0.07233760447491312,
+      "n_observations": 84
     }
   },
-  "last_updated": "2026-11-18"
+  "last_updated": "2026-11-19"
 }

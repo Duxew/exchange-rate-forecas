@@ -2,7 +2,7 @@
   "currency": "JPY",
   "n_observations": 86,
   "overall_mae": 0.368289667104214,
-  "overall_rmse": 0.49315185933012623,
+  "overall_rmse": 0.4931518593301263,
   "overall_mape": 1.2000249715633986,
   "by_horizon": {
     "1-7": {
@@ -12,5 +12,5 @@
       "n_observations": 85
     }
   },
-  "last_updated": "2026-11-21"
+  "last_updated": "2026-11-22"
 }

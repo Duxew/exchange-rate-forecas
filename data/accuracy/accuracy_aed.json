@@ -2,8 +2,8 @@
   "currency": "AED",
   "n_observations": 86,
   "overall_mae": 0.008275516131254539,
-  "overall_rmse": 0.01092052041491123,
-  "overall_mape": 0.062365322314710016,
+  "overall_rmse": 0.010920520414911232,
+  "overall_mape": 0.062365322314709995,
   "by_horizon": {
     "1-7": {
       "mae": 0.008328921229349842,
@@ -12,5 +12,5 @@
       "n_observations": 85
     }
   },
-  "last_updated": "2026-11-21"
+  "last_updated": "2026-11-22"
 }

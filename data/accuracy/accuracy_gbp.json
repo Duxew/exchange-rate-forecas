@@ -1,16 +1,16 @@
 {
   "currency": "GBP",
-  "n_observations": 87,
-  "overall_mae": 0.3605567298607214,
-  "overall_rmse": 0.467443085044385,
-  "overall_mape": 0.5545456941012933,
+  "n_observations": 88,
+  "overall_mae": 0.36182279811239754,
+  "overall_rmse": 0.46749478193981175,
+  "overall_mape": 0.5563518663652038,
   "by_horizon": {
     "1-7": {
-      "mae": 0.36061565536236073,
-      "rmse": 0.46858758281930685,
-      "mape": 0.5544247138238038,
-      "n_observations": 86
+      "mae": 0.3618955988180602,
+      "rmse": 0.46862660839185294,
+      "mape": 0.5562530372663512,
+      "n_observations": 87
     }
   },
-  "last_updated": "2026-11-23"
+  "last_updated": "2026-11-24"
 }
